@@ -17,6 +17,7 @@ filesystem_archive="$snapshot_dir/$host_name-filesystem.tar.zst"
 mysql_archive="$snapshot_dir/$host_name-mysql-physical.tar.zst"
 metadata_archive="$snapshot_dir/$host_name-recovery-metadata.tar.zst"
 remote_snapshot="$dropbox_remote/$host_name/$timestamp"
+rclone_log="$backup_root/$host_name-$timestamp-rclone.log"
 mysql_was_stopped=false
 
 restart_mysql_if_needed() {
@@ -99,7 +100,7 @@ du -h "$filesystem_archive" "$mysql_archive" "$metadata_archive" > "$snapshot_di
 printf '%s\n' "$remote_snapshot" > "$snapshot_dir/DROPBOX-LOCATION.txt"
 
 printf '%s\n' 'Uploading backup to Dropbox…'
-rclone copy "$snapshot_dir" "$remote_snapshot" --checkers 4 --transfers 1 --log-file="$snapshot_dir/rclone-upload.log" --log-level INFO
-rclone check "$snapshot_dir" "$remote_snapshot" --size-only --log-file="$snapshot_dir/rclone-check.log" --log-level INFO
+rclone copy "$snapshot_dir" "$remote_snapshot" --exclude 'rclone-*.log' --checkers 4 --transfers 1 --log-file="$rclone_log" --log-level INFO
+rclone check "$snapshot_dir" "$remote_snapshot" --exclude 'rclone-*.log' --size-only --log-file="$rclone_log" --log-level INFO
 
 printf '%s\n' "Backup complete: $remote_snapshot"
