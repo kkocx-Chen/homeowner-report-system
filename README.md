@@ -128,7 +128,13 @@ pm2 restart homeowner-report
 1. 在本機完成修改與檢查。
 2. 更新 `CHANGELOG.md` 的 `Unreleased` 區塊。
 3. 建立清楚的 Git commit，例如 `feat: 新增公告彈窗`。
-4. 推送到私有 GitHub repository。
+4. 推送到 VPS Git 中繼；它會使用專屬 SSH deploy key 自動同步到私有 GitHub repository。
 5. 只有確認要上線時，才在 VPS 執行部署、建置與重啟服務。
 
-單純 `git push` 不會影響 `report.kkocx.com`；網站部署會是另一個明確執行的步驟。
+本機已設定名為 `vps` 的 Git remote；完成一項更新後，使用：
+
+```bash
+git push vps main --tags
+```
+
+單純 Git 推送不會影響 `report.kkocx.com`；網站部署會是另一個明確執行的步驟。VPS 的 Git 中繼位於 `/www/git/homeowner-report-system.git`，不在正式網站目錄內。

@@ -4,9 +4,9 @@
 
 ## [Unreleased]
 
-### Planned
+### Changed
 
-- 尚未有待發布的更新。
+- 建立 VPS Git 中繼與 GitHub 私有倉庫鏡像；每次完成並提交的程式更新，都可透過 VPS 自動同步至 GitHub。
 
 ## [1.0.0] - 2026-08-08
 
