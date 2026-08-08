@@ -24,7 +24,7 @@ npm run dev
 
 ## 寶塔面板 + Nginx 上架
 
-建議 VPS：Ubuntu LTS、1 核心、2 GB RAM、40 GB SSD。若在主機上執行建置，請先建立 1–2 GB swap。
+目前正式站使用 Debian 12、1 核心、2 GB RAM、40 GB SSD。若在主機上執行建置，建議保留足夠 swap 或以較低記憶體上限執行建置。
 
 ### 1. 安裝環境
 
@@ -32,14 +32,15 @@ npm run dev
 
 - Nginx
 - Node.js 版本管理器，並安裝 Node.js 22
-- PM2 管理器（也可使用寶塔的 Node 專案管理功能）
+
+目前正式站以 systemd 的 `report-kkocx` 服務管理 Node.js，不使用 PM2。
 
 ### 2. 上傳網站
 
 把專案放到：
 
 ```text
-/www/wwwroot/homeowner-report
+/www/wwwroot/report.kkocx.com
 ```
 
 在網站根目錄新增 `.env.production`：
@@ -58,24 +59,13 @@ ADMIN_AUTH_DISABLED=false
 在寶塔終端機進入網站目錄後執行：
 
 ```bash
-npm install
-npm run build
+pnpm install
+NODE_OPTIONS=--max-old-space-size=768 pnpm run build
+sudo chown -R www:www .next
+sudo systemctl restart report-kkocx
 ```
 
-建置完成後使用寶塔 Node 專案管理器新增專案：
-
-- 專案目錄：`/www/wwwroot/homeowner-report`
-- 啟動指令：`npm run start -- -p 3100`
-- 執行使用者：`www`
-- Node 版本：22
-- 對外端口：不開放，只讓 Nginx 連到 `127.0.0.1:3100`
-
-也可以在專案目錄執行：
-
-```bash
-pm2 start ecosystem.config.cjs
-pm2 save
-```
+正式服務會以 Node.js 22 在 `127.0.0.1:3100` 運行，Nginx 反向代理後由網域提供 HTTPS 連線。可用 `sudo systemctl status report-kkocx` 檢查狀態。
 
 ### 4. 設定 Nginx
 
@@ -96,7 +86,7 @@ pm2 save
 所有 Admin 更新內容都保存在：
 
 ```text
-/www/wwwroot/homeowner-report/data/report.json
+/www/wwwroot/report.kkocx.com/data/report.json
 ```
 
 請在寶塔排程中每天備份這個檔案。部署時使用單一 Node 行程（PM2 `instances: 1`），避免多行程同時寫入同一份資料。
@@ -106,9 +96,10 @@ pm2 save
 上傳新版程式碼後執行：
 
 ```bash
-npm install
-npm run build
-pm2 restart homeowner-report
+pnpm install
+NODE_OPTIONS=--max-old-space-size=768 pnpm run build
+sudo chown -R www:www .next
+sudo systemctl restart report-kkocx
 ```
 
 更新前請先備份 `data/report.json`，且不要用空白檔覆蓋它。
