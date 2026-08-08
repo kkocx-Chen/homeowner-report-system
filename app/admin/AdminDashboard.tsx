@@ -1,0 +1,317 @@
+"use client";
+
+import Link from "next/link";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { defaultReport, type Announcement, type PropertyReport, type ProspectiveBuyer } from "../../lib/report";
+
+type NumericKey = {
+  [K in keyof PropertyReport]: PropertyReport[K] extends number ? K : never
+}[keyof PropertyReport];
+
+function Field({ label, hint, children, wide = false, className = "" }: { label: string; hint?: string; children: React.ReactNode; wide?: boolean; className?: string }) {
+  return <label className={`admin-field ${wide ? "wide" : ""} ${className}`}><span>{label}</span>{children}{hint && <small>{hint}</small>}</label>;
+}
+
+export default function AdminDashboard({ initialAuthenticated, authDisabled }: { initialAuthenticated: boolean; authDisabled: boolean }) {
+  const [authenticated, setAuthenticated] = useState(initialAuthenticated);
+  const [password, setPassword] = useState("");
+  const [report, setReport] = useState<PropertyReport>(defaultReport);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [uploadingAnnouncementImage, setUploadingAnnouncementImage] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/report").then((response) => response.json()).then((data) => {
+      if (data.report) setReport(data.report);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const setText = (key: keyof PropertyReport, value: string) => setReport((current) => ({ ...current, [key]: value }));
+  const setNumber = (key: NumericKey, value: string) => setReport((current) => ({ ...current, [key]: Number(value) }));
+  const setViewingThisWeek = (value: string) => setReport((current) => {
+    const parsed = Number(value);
+    const count = Number.isFinite(parsed) ? Math.max(0, Math.min(50, Math.round(parsed))) : 0;
+    return {
+      ...current,
+      viewingThisWeek: count,
+      viewingThisWeekTimes: Array.from({ length: count }, (_, index) => current.viewingThisWeekTimes?.[index] ?? ""),
+    };
+  });
+  const setViewingThisWeekTime = (index: number, value: string) => setReport((current) => {
+    const times = Array.from({ length: current.viewingThisWeek }, (_, timeIndex) => current.viewingThisWeekTimes?.[timeIndex] ?? "");
+    times[index] = value;
+    return { ...current, viewingThisWeekTimes: times };
+  });
+  const set591Device = (key: "view591Desktop" | "view591Mobile", value: string) => setReport((current) => {
+    const nextValue = Number(value);
+    const otherValue = key === "view591Desktop" ? current.view591Mobile : current.view591Desktop;
+    return { ...current, [key]: nextValue, view591Count: nextValue + otherValue };
+  });
+  const setAnnouncement = (patch: Partial<Announcement>) => setReport((current) => ({
+    ...current,
+    announcement: { ...current.announcement, ...patch },
+  }));
+  const updateProspectiveBuyer = (index: number, patch: Partial<ProspectiveBuyer>) => setReport((current) => ({
+    ...current,
+    prospectiveBuyers: current.prospectiveBuyers.map((buyer, buyerIndex) => buyerIndex === index ? { ...buyer, ...patch } : buyer),
+  }));
+  const addProspectiveBuyer = () => setReport((current) => ({
+    ...current,
+    prospectiveBuyers: [...current.prospectiveBuyers, { title: "", status: "tracking", reason: "", progress: "", revisitTime: "" }],
+  }));
+  const removeProspectiveBuyer = (index: number) => setReport((current) => ({
+    ...current,
+    prospectiveBuyers: current.prospectiveBuyers.filter((_, buyerIndex) => buyerIndex !== index),
+  }));
+  const moveProspectiveBuyer = (index: number, direction: -1 | 1) => setReport((current) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= current.prospectiveBuyers.length) return current;
+    const prospectiveBuyers = [...current.prospectiveBuyers];
+    [prospectiveBuyers[index], prospectiveBuyers[targetIndex]] = [prospectiveBuyers[targetIndex], prospectiveBuyers[index]];
+    return { ...current, prospectiveBuyers };
+  });
+
+  async function login(event: FormEvent) {
+    event.preventDefault();
+    setMessage("");
+    const response = await fetch("/api/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password }) });
+    const data = await response.json();
+    if (!response.ok) return setMessage(data.error || "登入失敗");
+    setAuthenticated(true);
+    setPassword("");
+  }
+
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage("");
+    const response = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(report) });
+    const data = await response.json();
+    if (response.ok) {
+      setReport(data.report);
+      setMessage("更新完成，屋主頁已顯示最新內容。");
+    } else {
+      setMessage(data.error || "更新失敗，請稍後再試。");
+      if (response.status === 401) setAuthenticated(false);
+    }
+    setSaving(false);
+  }
+
+  async function uploadAnnouncementImage(event: ChangeEvent<HTMLInputElement>) {
+    const image = event.target.files?.[0];
+    event.target.value = "";
+    if (!image) return;
+
+    setUploadingAnnouncementImage(true);
+    setMessage("");
+    const formData = new FormData();
+    formData.append("image", image);
+
+    try {
+      const response = await fetch("/api/admin/announcement-image", { method: "POST", body: formData });
+      const data = await response.json();
+      if (!response.ok) {
+        setMessage(data.error || "公告照片上傳失敗，請稍後再試。");
+        if (response.status === 401) setAuthenticated(false);
+        return;
+      }
+      setAnnouncement({ imageUrl: data.url });
+      setMessage("公告照片上傳完成，請記得儲存所有變更。");
+    } catch {
+      setMessage("公告照片上傳失敗，請確認網路後再試。");
+    } finally {
+      setUploadingAnnouncementImage(false);
+    }
+  }
+
+  async function logout() {
+    if (authDisabled) return;
+    await fetch("/api/admin/login", { method: "DELETE" });
+    setAuthenticated(false);
+  }
+
+  if (!authenticated) {
+    return <main className="admin-login-shell">
+      <Link href="/" className="brand"><span className="brand-mark" aria-hidden="true">S</span><span>時上S</span></Link>
+      <section className="login-card">
+        <span className="login-symbol">編</span>
+        <p className="eyebrow">ADMIN CONSOLE</p>
+        <h1>管理員登入</h1>
+        <p>登入後即可更新屋主看到的所有數據與專員分析。</p>
+        <form onSubmit={login}>
+          <label><span>管理密碼</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="請輸入管理密碼" autoComplete="current-password" required /></label>
+          <button type="submit">登入管理後台</button>
+        </form>
+        {message && <div className="form-message error" role="alert">{message}</div>}
+        <Link href="/" className="back-link">← 返回屋主報告</Link>
+      </section>
+    </main>;
+  }
+
+  return <main className="admin-shell">
+    <header className="admin-topbar">
+      <div><Link href="/" className="brand"><span className="brand-mark" aria-hidden="true">S</span><span>時上S</span></Link><span className="admin-badge">管理後台</span></div>
+      <div><Link href="/" className="preview-button">預覽屋主頁 ↗</Link>{authDisabled ? <span className="admin-badge">免登入調整中</span> : <button type="button" className="logout-button" onClick={logout}>登出</button>}</div>
+    </header>
+
+    <form className="admin-content" onSubmit={save}>
+      <div className="admin-title"><div><p className="eyebrow">REPORT EDITOR</p><h1>更新房屋進度</h1><p>依區塊填寫，儲存後屋主頁會立即更新。</p></div><button className="save-button" type="submit" disabled={saving || loading || uploadingAnnouncementImage}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
+      {message && <div className={`form-message ${message.includes("完成") ? "success" : "error"}`} role="status">{message}</div>}
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>01</span><div><h2>物件基本資料</h2><p>屋主頁最上方顯示的名稱與本期狀態</p></div></div>
+        <div className="form-grid">
+          <Field label="物件名稱"><input value={report.propertyName} onChange={(e) => setText("propertyName", e.target.value)} /></Field>
+          <Field label="報告期間"><input value={report.reportPeriod} onChange={(e) => setText("reportPeriod", e.target.value)} /></Field>
+          <Field label="地址／委託資訊" wide><input value={report.address} onChange={(e) => setText("address", e.target.value)} /></Field>
+          <Field label="銷售狀態"><input value={report.saleStatus} onChange={(e) => setText("saleStatus", e.target.value)} /></Field>
+          <Field label="狀態補充"><input value={report.statusNote} onChange={(e) => setText("statusNote", e.target.value)} /></Field>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>02</span><div><h2>賞屋人數</h2><p>更新本週與累積賞屋熱度</p></div></div>
+        <div className="form-grid three">
+          <Field label="本週賞屋組數"><input type="number" min="0" max="50" value={report.viewingThisWeek} onChange={(e) => setViewingThisWeek(e.target.value)} /></Field>
+          <Field label="總賞屋組數"><input type="number" value={report.viewingCount} onChange={(e) => setNumber("viewingCount", e.target.value)} /></Field>
+          <Field label="較上期成長 %"><input type="number" step="0.1" value={report.viewingGrowth} onChange={(e) => setNumber("viewingGrowth", e.target.value)} /></Field>
+          <div className="weekly-viewing-admin">
+            <div className="weekly-viewing-admin-heading">
+              <strong>每組帶看時間</strong>
+              <span>依本週賞屋組數自動產生 {report.viewingThisWeek} 個時間欄位</span>
+            </div>
+            <div className="weekly-viewing-admin-grid">
+              {report.viewingThisWeek > 0 ? Array.from({ length: report.viewingThisWeek }, (_, index) => (
+                <Field key={index} label={`第 ${index + 1} 組帶看時間`}>
+                  <input type="datetime-local" value={report.viewingThisWeekTimes?.[index] ?? ""} onChange={(e) => setViewingThisWeekTime(index, e.target.value)} />
+                </Field>
+              )) : <p className="weekly-viewing-admin-empty">本週組數為 0，暫無帶看時間欄位。</p>}
+            </div>
+          </div>
+          <div className="buyer-admin-editor">
+            <div className="buyer-admin-heading">
+              <div><strong>有望買方</strong><span>可設定追蹤中，或填寫買方無效的原因</span></div>
+              <button type="button" className="buyer-add-button" onClick={addProspectiveBuyer} disabled={report.prospectiveBuyers.length >= 20}>
+                <i className="bi bi-person-plus" aria-hidden="true" />新增買方
+              </button>
+            </div>
+            <div className="buyer-admin-list">
+              {report.prospectiveBuyers.length > 0 ? report.prospectiveBuyers.map((buyer, index) => (
+                <div className="buyer-admin-row" key={index}>
+                  <Field label={`買方 ${index + 1} 標題`} className="buyer-title-field"><input value={buyer.title} onChange={(e) => updateProspectiveBuyer(index, { title: e.target.value })} placeholder="例如：二次看屋買方 A" /></Field>
+                  <Field label="目前狀態" className="buyer-status-field">
+                    <select
+                      value={buyer.status}
+                      onChange={(e) => {
+                        const status = e.target.value as ProspectiveBuyer["status"];
+                        updateProspectiveBuyer(index, { status, reason: status === "tracking" ? "" : buyer.reason });
+                      }}
+                    >
+                      <option value="tracking">追蹤中</option>
+                      <option value="invalid">已無效</option>
+                    </select>
+                  </Field>
+                  <Field label="目前進度" className="buyer-progress-field">
+                    <input value={buyer.progress ?? ""} onChange={(e) => updateProspectiveBuyer(index, { progress: e.target.value })} placeholder="例如：已完成首次帶看，持續討論貸款條件" />
+                  </Field>
+                  <Field label="複看時間" className="buyer-revisit-field">
+                    <input value={buyer.revisitTime ?? ""} onChange={(e) => updateProspectiveBuyer(index, { revisitTime: e.target.value })} placeholder="例如：8 月 10 日 14:00" />
+                  </Field>
+                  <Field label="無效原因" className="buyer-reason-field">
+                    <input
+                      value={buyer.reason ?? ""}
+                      onChange={(e) => updateProspectiveBuyer(index, { reason: e.target.value })}
+                      placeholder={buyer.status === "invalid" ? "例如：資金考量" : "追蹤中無需填寫"}
+                      disabled={buyer.status === "tracking"}
+                    />
+                  </Field>
+                  <div className="buyer-row-actions">
+                    <button type="button" className="buyer-order-button" onClick={() => moveProspectiveBuyer(index, -1)} disabled={index === 0} aria-label={`將買方 ${index + 1} 上移`} title="上移">
+                      <i className="bi bi-arrow-up" aria-hidden="true" />
+                    </button>
+                    <button type="button" className="buyer-order-button" onClick={() => moveProspectiveBuyer(index, 1)} disabled={index === report.prospectiveBuyers.length - 1} aria-label={`將買方 ${index + 1} 下移`} title="下移">
+                      <i className="bi bi-arrow-down" aria-hidden="true" />
+                    </button>
+                    <button type="button" className="buyer-remove-button" onClick={() => removeProspectiveBuyer(index)} aria-label={`刪除買方 ${index + 1}`} title="刪除">
+                      <i className="bi bi-trash3" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
+              )) : <p className="buyer-admin-empty">目前尚未新增有望買方。</p>}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>03</span><div><h2>周遭行情</h2><p>用總價、單價與近期成交呈現市場位置</p></div></div>
+        <div className="form-grid three">
+          <Field label="區域低標（萬）"><input type="number" value={report.marketLow} onChange={(e) => setNumber("marketLow", e.target.value)} /></Field>
+          <Field label="區域中位（萬）"><input type="number" value={report.marketMedian} onChange={(e) => setNumber("marketMedian", e.target.value)} /></Field>
+          <Field label="區域高標（萬）"><input type="number" value={report.marketHigh} onChange={(e) => setNumber("marketHigh", e.target.value)} /></Field>
+          <Field label="目前開價（萬）"><input type="number" value={report.listingPrice} onChange={(e) => setNumber("listingPrice", e.target.value)} /></Field>
+          <Field label="物件單價（萬／坪）"><input type="number" step="0.1" value={report.averagePingPrice} onChange={(e) => setNumber("averagePingPrice", e.target.value)} /></Field>
+          <Field label="上週成交筆數"><input type="number" value={report.recentTransactions} onChange={(e) => setNumber("recentTransactions", e.target.value)} /></Field>
+          <Field label="市場摘要" wide><textarea value={report.marketSummary} onChange={(e) => setText("marketSummary", e.target.value)} /></Field>
+          <Field label="近期相似成交" hint="每行一筆，以｜分隔：物件｜說明｜總價｜單價" wide><textarea className="tall" value={report.comparableCases} onChange={(e) => setText("comparableCases", e.target.value)} /></Field>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>04</span><div><h2>591 瀏覽次數</h2><p>無需爬蟲，依 591 後台數據手動同步</p></div></div>
+        <div className="form-grid three">
+          <Field label="電腦瀏覽次數"><input type="number" value={report.view591Desktop} onChange={(e) => set591Device("view591Desktop", e.target.value)} /></Field>
+          <Field label="手機瀏覽次數"><input type="number" value={report.view591Mobile} onChange={(e) => set591Device("view591Mobile", e.target.value)} /></Field>
+          <Field label="累積瀏覽次數" hint="由電腦與手機自動加總"><input type="number" value={report.view591Count} readOnly /></Field>
+          <Field label="近七日成長 %"><input type="number" step="0.1" value={report.view591Growth} onChange={(e) => setNumber("view591Growth", e.target.value)} /></Field>
+          <Field label="最後同步時間"><input value={report.last591Sync} onChange={(e) => setText("last591Sync", e.target.value)} /></Field>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>05</span><div><h2>專員個人分析</h2><p>用白話整理市場回饋與下一步建議</p></div></div>
+        <div className="form-grid">
+          <Field label="分析重點" wide><input value={report.analysisHeadline} onChange={(e) => setText("analysisHeadline", e.target.value)} /></Field>
+          <Field label="完整分析" wide><textarea className="tall" value={report.analysisBody} onChange={(e) => setText("analysisBody", e.target.value)} /></Field>
+          <Field label="本期建議" wide><textarea value={report.recommendation} onChange={(e) => setText("recommendation", e.target.value)} /></Field>
+          <Field label="專員姓名"><input value={report.agentName} onChange={(e) => setText("agentName", e.target.value)} /></Field>
+          <Field label="職稱"><input value={report.agentTitle} onChange={(e) => setText("agentTitle", e.target.value)} /></Field>
+          <Field label="聯絡電話"><input value={report.agentPhone} onChange={(e) => setText("agentPhone", e.target.value)} /></Field>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>06</span><div><h2>網頁公告</h2><p>啟用後，屋主每次開啟頁面都會先看到公告彈窗</p></div></div>
+        <div className="form-grid">
+          <button type="button" className={`announcement-toggle wide ${report.announcement.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcement.enabled} onClick={() => setAnnouncement({ enabled: !report.announcement.enabled })}>
+            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告功能</strong><small>關閉時，前台不會顯示公告彈窗。</small></span>
+          </button>
+          <Field label="公告標題" wide><input value={report.announcement.title} onChange={(event) => setAnnouncement({ title: event.target.value })} placeholder="例如：本週帶看與曝光更新" /></Field>
+          <Field label="公告內容" hint="可直接換行，前台會逐行顯示。" wide><textarea className="tall" value={report.announcement.body} onChange={(event) => setAnnouncement({ body: event.target.value })} placeholder={"例如：\n本週賞屋持續進行中\n謝謝屋主耐心配合"} /></Field>
+          <div className="announcement-image-field wide">
+            <span>公告照片</span>
+            <div className="announcement-image-editor">
+              {report.announcement.imageUrl ? (
+                <div className="announcement-image-preview">
+                  <img src={report.announcement.imageUrl} alt="公告照片預覽" />
+                  <button type="button" onClick={() => setAnnouncement({ imageUrl: "" })}><i className="bi bi-trash3" aria-hidden="true" />移除照片</button>
+                </div>
+              ) : <div className="announcement-image-empty"><i className="bi bi-image" aria-hidden="true" /><span>尚未上傳公告照片</span></div>}
+              <div className="announcement-image-actions">
+                <label className={`announcement-upload-button ${uploadingAnnouncementImage ? "is-uploading" : ""}`}>
+                  <i className={`bi ${uploadingAnnouncementImage ? "bi-arrow-repeat" : "bi-cloud-arrow-up"}`} aria-hidden="true" />
+                  <span>{uploadingAnnouncementImage ? "照片上傳中…" : report.announcement.imageUrl ? "更換照片" : "選擇照片"}</span>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadAnnouncementImage} disabled={uploadingAnnouncementImage} />
+                </label>
+                <small>支援 JPG、PNG、WebP，單張最多 6 MB。上傳後請按儲存所有變更。</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="sticky-save"><span>{message || "變更尚未儲存"}</span><button className="save-button" type="submit" disabled={saving || uploadingAnnouncementImage}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
+    </form>
+  </main>;
+}
