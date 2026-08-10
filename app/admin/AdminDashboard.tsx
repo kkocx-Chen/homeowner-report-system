@@ -282,10 +282,10 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>06</span><div><h2>網頁公告</h2><p>啟用後，屋主每次開啟頁面都會先看到公告彈窗</p></div></div>
+        <div className="panel-heading"><span>06</span><div><h2>網頁公告</h2><p>啟用後會在前台保留公告按鈕，未關閉自動顯示的裝置會先看到彈窗</p></div></div>
         <div className="form-grid">
           <button type="button" className={`announcement-toggle wide ${report.announcement.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcement.enabled} onClick={() => setAnnouncement({ enabled: !report.announcement.enabled })}>
-            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告功能</strong><small>關閉時，前台不會顯示公告彈窗。</small></span>
+            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告功能</strong><small>關閉時，前台不會顯示公告按鈕與彈窗。</small></span>
           </button>
           <Field label="公告標題" wide><input value={report.announcement.title} onChange={(event) => setAnnouncement({ title: event.target.value })} placeholder="例如：本週帶看與曝光更新" /></Field>
           <Field label="公告內容" hint="可直接換行，前台會逐行顯示。" wide><textarea className="tall" value={report.announcement.body} onChange={(event) => setAnnouncement({ body: event.target.value })} placeholder={"例如：\n本週賞屋持續進行中\n謝謝屋主耐心配合"} /></Field>

@@ -31,13 +31,15 @@ export default async function Home() {
   const comparables = parseComparableCases(report.comparableCases);
   return (
     <main className="site-shell">
-      <AnnouncementModal announcement={report.announcement} />
       <header className="topbar">
         <Link href="/" className="mini-title" aria-label="屋況首頁">
           <strong>時上S</strong>
           <span>屋主銷售進度</span>
         </Link>
-        <RefreshTime />
+        <div className="topbar-actions">
+          <AnnouncementModal announcement={report.announcement} />
+          <RefreshTime />
+        </div>
       </header>
 
       <section className="summary-grid" id="overview" aria-label="本期摘要">
@@ -63,7 +65,7 @@ export default async function Home() {
         >
           <div className="metric-heading">
             <MetricIcon tone="ink">591</MetricIcon>
-            <div><span>591 瀏覽次數</span><small className="listing-rates">平日 800元/天　假日 1800元/天</small></div>
+            <div><span>591 瀏覽次數</span><small className="listing-rates">平日 800元/天 假日 1800元/天</small></div>
             <i className="bi bi-arrow-up-right listing-link-icon" aria-hidden="true" />
           </div>
           <div className="metric-value"><strong><RollingNumber value={report.view591Count} duration={1100} /></strong><span>次</span></div>

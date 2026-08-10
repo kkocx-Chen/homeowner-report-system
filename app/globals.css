@@ -59,6 +59,15 @@ button { cursor: pointer; }
 .brand-mark::after { content: ""; position: absolute; right: 2px; bottom: 3px; width: 8px; height: 8px; border: 2px solid var(--paper); border-radius: 50%; background: var(--clay); }
 .brand-mark.small { width: 28px; height: 28px; border-radius: 8px; font-size: 15px; }
 .topbar-right, .admin-topbar > div { display: flex; align-items: center; gap: 20px; }
+.topbar-actions { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.announcement-pill {
+  min-height: 32px; padding: 0 11px; display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
+  border: 1px solid rgba(217,121,88,.15); border-radius: 999px; background: rgba(243,217,203,.5); color: #96523d;
+  font-size: 11px; font-weight: 680; -webkit-tap-highlight-color: rgba(217,121,88,.16);
+}
+.announcement-pill i { font-size: 12px; }
+.announcement-pill:active { transform: scale(.97); }
+.announcement-pill:focus-visible { outline: 3px solid rgba(217,121,88,.28); outline-offset: 2px; }
 .live-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 12px; border: 1px solid rgba(32,51,45,.08); border-radius: 999px; background: #f7f8f8; color: var(--ink-soft); font-size: 11px; }
 .live-pill i { width: 7px; height: 7px; border-radius: 50%; background: #6fa072; box-shadow: 0 0 0 4px rgba(111,160,114,.15); }
 .admin-link { color: var(--ink-soft); font-size: 13px; border-bottom: 1px solid var(--ink-soft); padding-bottom: 2px; }
@@ -224,6 +233,7 @@ button { cursor: pointer; }
 .announcement-dismiss-option input:disabled { cursor: wait; opacity: .65; }
 .announcement-dismiss-option p { margin: 9px 0 0; color: #a64f3e; font-size: 11px; line-height: 1.5; }
 @media (hover: hover) {
+  .announcement-pill:hover { background: rgba(243,217,203,.72); }
   .viewing-stat-button:hover { border-color: rgba(217,121,88,.28); background: rgba(243,217,203,.55); }
   .prospect-item:hover { background: rgba(220,229,220,.28); }
   .buyer-modal-close:hover { background: #e7ece8; }
@@ -411,6 +421,10 @@ footer a { padding-bottom: 3px; border-bottom: 1px solid #829087; }
 }
 
 @media (max-width: 620px) {
+  .topbar { padding-right: 12px; padding-left: 14px; }
+  .topbar-actions { gap: 5px; }
+  .announcement-pill { padding: 0 9px; }
+  .live-pill { padding: 0 10px; }
   .summary-grid { grid-template-columns: 1fr; }
   .metric-card.featured { grid-column: auto; }
   .metric-card { min-height: 305px; }

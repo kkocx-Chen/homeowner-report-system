@@ -8,8 +8,8 @@ export function RollingNumber({ value, duration = 900 }: { value: number; durati
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setDisplayed(target);
-      return;
+      const reducedMotionFrame = requestAnimationFrame(() => setDisplayed(target));
+      return () => cancelAnimationFrame(reducedMotionFrame);
     }
 
     let frame = 0;
