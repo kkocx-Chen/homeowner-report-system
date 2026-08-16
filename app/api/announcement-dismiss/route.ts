@@ -1,5 +1,3 @@
-import { getReport, writeReport } from "../../../lib/report-store";
-
 export const dynamic = "force-dynamic";
 
 function isAllowedRequest(request: Request) {
@@ -24,19 +22,5 @@ export async function POST(request: Request) {
     return Response.json({ error: "不允許此請求。" }, { status: 403 });
   }
 
-  try {
-    const currentReport = await getReport();
-    if (!currentReport.announcement.enabled) {
-      return Response.json({ ok: true, alreadyDismissed: true });
-    }
-
-    await writeReport({
-      ...currentReport,
-      announcement: { ...currentReport.announcement, enabled: false },
-    });
-
-    return Response.json({ ok: true });
-  } catch {
-    return Response.json({ error: "公告下架失敗，請稍後再試。" }, { status: 500 });
-  }
+  return Response.json({ ok: true, deprecated: true });
 }

@@ -7,10 +7,12 @@ export type ProspectiveBuyer = {
 };
 
 export type Announcement = {
+  id: string;
   enabled: boolean;
   title: string;
   body: string;
   imageUrl: string;
+  publishedAt: string;
 };
 
 export type PropertyReport = {
@@ -44,7 +46,8 @@ export type PropertyReport = {
   agentName: string;
   agentTitle: string;
   agentPhone: string;
-  announcement: Announcement;
+  announcementEnabled: boolean;
+  announcements: Announcement[];
   updatedAt: string;
 };
 
@@ -82,12 +85,8 @@ export const defaultReport: PropertyReport = {
   agentName: "陳政揚",
   agentTitle: "專任不動產顧問",
   agentPhone: "0912-345-678",
-  announcement: {
-    enabled: false,
-    title: "",
-    body: "",
-    imageUrl: "",
-  },
+  announcementEnabled: false,
+  announcements: [],
   updatedAt: "2026-08-06T01:30:00.000Z",
 };
 

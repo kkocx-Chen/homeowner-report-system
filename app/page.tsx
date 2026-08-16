@@ -6,7 +6,7 @@ import { RefreshTime } from "./RefreshTime";
 import { RollingNumber } from "./RollingNumber";
 import { ProspectiveBuyers } from "./ProspectiveBuyers";
 import { WeeklyViewingDetails } from "./WeeklyViewingDetails";
-import { AnnouncementModal } from "./AnnouncementModal";
+import { AnnouncementCenter } from "./AnnouncementModal";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,7 @@ export default async function Home() {
           <span>屋主銷售進度</span>
         </Link>
         <div className="topbar-actions">
-          <AnnouncementModal announcement={report.announcement} />
+          <AnnouncementCenter enabled={report.announcementEnabled} announcements={report.announcements} />
           <RefreshTime />
         </div>
       </header>

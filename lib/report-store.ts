@@ -1,5 +1,8 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { defaultReport, type PropertyReport } from "./report";
+import { defaultReport, type Announcement, type PropertyReport } from "./report";
+
+type LegacyAnnouncement = Partial<Omit<Announcement, "id" | "publishedAt">>;
+type StoredReport = Partial<PropertyReport> & { announcement?: LegacyAnnouncement };
 
 function dataPaths() {
   return {
@@ -12,12 +15,28 @@ function dataPaths() {
 export async function getReport(): Promise<PropertyReport> {
   const files = dataPaths();
   try {
-    const saved = JSON.parse(await readFile(files.report, "utf8")) as Partial<PropertyReport>;
-    const savedAnnouncement = saved.announcement && typeof saved.announcement === "object" ? saved.announcement : {};
+    const saved = JSON.parse(await readFile(files.report, "utf8")) as StoredReport;
+    const legacyAnnouncement = saved.announcement && typeof saved.announcement === "object" ? saved.announcement : null;
+    const migratedLegacyAnnouncement: Announcement[] = legacyAnnouncement && (
+      legacyAnnouncement.enabled || legacyAnnouncement.title || legacyAnnouncement.body || legacyAnnouncement.imageUrl
+    ) ? [{
+      id: "legacy-announcement",
+      enabled: legacyAnnouncement.enabled === true,
+      title: String(legacyAnnouncement.title ?? ""),
+      body: String(legacyAnnouncement.body ?? ""),
+      imageUrl: String(legacyAnnouncement.imageUrl ?? ""),
+      publishedAt: typeof saved.updatedAt === "string" ? saved.updatedAt : defaultReport.updatedAt,
+    }] : [];
+    const announcements = Array.isArray(saved.announcements) ? saved.announcements : migratedLegacyAnnouncement;
+    const savedReport = { ...saved };
+    delete savedReport.announcement;
     return {
       ...defaultReport,
-      ...saved,
-      announcement: { ...defaultReport.announcement, ...savedAnnouncement },
+      ...savedReport,
+      announcementEnabled: typeof saved.announcementEnabled === "boolean"
+        ? saved.announcementEnabled
+        : legacyAnnouncement?.enabled === true,
+      announcements,
     } as PropertyReport;
   } catch {
     await mkdir(files.directory, { recursive: true });

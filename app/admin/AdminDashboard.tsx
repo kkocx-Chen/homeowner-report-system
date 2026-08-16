@@ -2,7 +2,33 @@
 
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { defaultReport, type Announcement, type PropertyReport, type ProspectiveBuyer } from "../../lib/report";
+import { defaultReport, type PropertyReport, type ProspectiveBuyer } from "../../lib/report";
+
+type AnnouncementDraft = {
+  title: string;
+  body: string;
+  imageUrl: string;
+};
+
+const emptyAnnouncementDraft: AnnouncementDraft = { title: "", body: "", imageUrl: "" };
+
+function newAnnouncementId() {
+  return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `announcement-${Date.now()}`;
+}
+
+function formatAnnouncementTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "發布時間未設定";
+  return new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
 
 type NumericKey = {
   [K in keyof PropertyReport]: PropertyReport[K] extends number ? K : never
@@ -20,6 +46,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingAnnouncementImage, setUploadingAnnouncementImage] = useState(false);
+  const [announcementDraft, setAnnouncementDraft] = useState<AnnouncementDraft>(emptyAnnouncementDraft);
 
   useEffect(() => {
     fetch("/api/report").then((response) => response.json()).then((data) => {
@@ -48,9 +75,10 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
     const otherValue = key === "view591Desktop" ? current.view591Mobile : current.view591Desktop;
     return { ...current, [key]: nextValue, view591Count: nextValue + otherValue };
   });
-  const setAnnouncement = (patch: Partial<Announcement>) => setReport((current) => ({
+  const setAnnouncementDraftValue = (patch: Partial<AnnouncementDraft>) => setAnnouncementDraft((current) => ({ ...current, ...patch }));
+  const updateAnnouncementVisibility = (id: string, enabled: boolean) => setReport((current) => ({
     ...current,
-    announcement: { ...current.announcement, ...patch },
+    announcements: current.announcements.map((announcement) => announcement.id === id ? { ...announcement, enabled } : announcement),
   }));
   const updateProspectiveBuyer = (index: number, patch: Partial<ProspectiveBuyer>) => setReport((current) => ({
     ...current,
@@ -84,13 +112,32 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
 
   async function save(event: FormEvent) {
     event.preventDefault();
+    const hasAnnouncementDraft = Boolean(announcementDraft.title.trim() || announcementDraft.body.trim() || announcementDraft.imageUrl);
+    if (hasAnnouncementDraft && !announcementDraft.title.trim()) {
+      setMessage("請先填寫公告標題，再儲存發布。");
+      return;
+    }
+
     setSaving(true);
     setMessage("");
-    const response = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(report) });
+    const nextReport: PropertyReport = hasAnnouncementDraft ? {
+      ...report,
+      announcementEnabled: true,
+      announcements: [{
+        id: newAnnouncementId(),
+        enabled: true,
+        title: announcementDraft.title.trim(),
+        body: announcementDraft.body.trim(),
+        imageUrl: announcementDraft.imageUrl,
+        publishedAt: new Date().toISOString(),
+      }, ...report.announcements],
+    } : report;
+    const response = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(nextReport) });
     const data = await response.json();
     if (response.ok) {
       setReport(data.report);
-      setMessage("更新完成，屋主頁已顯示最新內容。");
+      if (hasAnnouncementDraft) setAnnouncementDraft(emptyAnnouncementDraft);
+      setMessage(hasAnnouncementDraft ? "新公告已發布並加入歷史紀錄。" : "更新完成，屋主頁已顯示最新內容。");
     } else {
       setMessage(data.error || "更新失敗，請稍後再試。");
       if (response.status === 401) setAuthenticated(false);
@@ -116,7 +163,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         if (response.status === 401) setAuthenticated(false);
         return;
       }
-      setAnnouncement({ imageUrl: data.url });
+      setAnnouncementDraftValue({ imageUrl: data.url });
       setMessage("公告照片上傳完成，請記得儲存所有變更。");
     } catch {
       setMessage("公告照片上傳失敗，請確認網路後再試。");
@@ -282,30 +329,62 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>06</span><div><h2>網頁公告</h2><p>啟用後會在前台保留公告按鈕，未關閉自動顯示的裝置會先看到彈窗</p></div></div>
+        <div className="panel-heading"><span>06</span><div><h2>公告中心</h2><p>發布新公告並保留過往公告紀錄</p></div></div>
         <div className="form-grid">
-          <button type="button" className={`announcement-toggle wide ${report.announcement.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcement.enabled} onClick={() => setAnnouncement({ enabled: !report.announcement.enabled })}>
-            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告功能</strong><small>關閉時，前台不會顯示公告按鈕與彈窗。</small></span>
+          <button type="button" className={`announcement-toggle wide ${report.announcementEnabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcementEnabled} onClick={() => setReport((current) => ({ ...current, announcementEnabled: !current.announcementEnabled }))}>
+            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告中心</strong><small>開啟時，前台右上角會顯示公告入口；公告不會再自動彈出。</small></span>
           </button>
-          <Field label="公告標題" wide><input value={report.announcement.title} onChange={(event) => setAnnouncement({ title: event.target.value })} placeholder="例如：本週帶看與曝光更新" /></Field>
-          <Field label="公告內容" hint="可直接換行，前台會逐行顯示。" wide><textarea className="tall" value={report.announcement.body} onChange={(event) => setAnnouncement({ body: event.target.value })} placeholder={"例如：\n本週賞屋持續進行中\n謝謝屋主耐心配合"} /></Field>
+          <div className="announcement-compose-heading wide">
+            <div><strong>撰寫新公告</strong><span>儲存所有變更時會正式發布，並自動加入公告歷史。</span></div>
+            <span className="announcement-new-window"><i className="bi bi-clock" aria-hidden="true" />發布後 24 小時顯示未讀</span>
+          </div>
+          <Field label="公告標題" wide><input value={announcementDraft.title} onChange={(event) => setAnnouncementDraftValue({ title: event.target.value })} placeholder="例如：本週帶看與曝光更新" /></Field>
+          <Field label="公告內容" hint="可直接換行，前台會逐行顯示。" wide><textarea className="tall" value={announcementDraft.body} onChange={(event) => setAnnouncementDraftValue({ body: event.target.value })} placeholder={"例如：\n本週賞屋持續進行中\n謝謝屋主耐心配合"} /></Field>
           <div className="announcement-image-field wide">
             <span>公告照片</span>
             <div className="announcement-image-editor">
-              {report.announcement.imageUrl ? (
+              {announcementDraft.imageUrl ? (
                 <div className="announcement-image-preview">
-                  <img src={report.announcement.imageUrl} alt="公告照片預覽" />
-                  <button type="button" onClick={() => setAnnouncement({ imageUrl: "" })}><i className="bi bi-trash3" aria-hidden="true" />移除照片</button>
+                  <img src={announcementDraft.imageUrl} alt="公告照片預覽" />
+                  <button type="button" onClick={() => setAnnouncementDraftValue({ imageUrl: "" })}><i className="bi bi-trash3" aria-hidden="true" />移除照片</button>
                 </div>
               ) : <div className="announcement-image-empty"><i className="bi bi-image" aria-hidden="true" /><span>尚未上傳公告照片</span></div>}
               <div className="announcement-image-actions">
                 <label className={`announcement-upload-button ${uploadingAnnouncementImage ? "is-uploading" : ""}`}>
                   <i className={`bi ${uploadingAnnouncementImage ? "bi-arrow-repeat" : "bi-cloud-arrow-up"}`} aria-hidden="true" />
-                  <span>{uploadingAnnouncementImage ? "照片上傳中…" : report.announcement.imageUrl ? "更換照片" : "選擇照片"}</span>
+                  <span>{uploadingAnnouncementImage ? "照片上傳中…" : announcementDraft.imageUrl ? "更換照片" : "選擇照片"}</span>
                   <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadAnnouncementImage} disabled={uploadingAnnouncementImage} />
                 </label>
-                <small>支援 JPG、PNG、WebP，單張最多 6 MB。上傳後請按儲存所有變更。</small>
+                <small>支援 JPG、PNG、WebP，單張最多 6 MB。填寫標題後按「儲存所有變更」即可發布。</small>
               </div>
+            </div>
+          </div>
+          <div className="announcement-admin-history wide">
+            <div className="announcement-admin-history-heading">
+              <div><strong>歷史公告</strong><span>共 {report.announcements.length} 則，最新公告會排在最上方。</span></div>
+            </div>
+            <div className="announcement-admin-history-list">
+              {report.announcements.length > 0 ? report.announcements.map((announcement, index) => (
+                <div className="announcement-admin-history-row" key={announcement.id}>
+                  <span className="announcement-admin-history-index">{index + 1}</span>
+                  <div className="announcement-admin-history-copy">
+                    <time dateTime={announcement.publishedAt}>{formatAnnouncementTime(announcement.publishedAt)}</time>
+                    <strong>{announcement.title || "未命名公告"}</strong>
+                    {announcement.body && <p>{announcement.body}</p>}
+                  </div>
+                  {announcement.imageUrl && <img src={announcement.imageUrl} alt="" />}
+                  <button
+                    type="button"
+                    className={`announcement-history-toggle ${announcement.enabled ? "is-enabled" : ""}`}
+                    role="switch"
+                    aria-checked={announcement.enabled}
+                    onClick={() => updateAnnouncementVisibility(announcement.id, !announcement.enabled)}
+                  >
+                    <span aria-hidden="true" />
+                    {announcement.enabled ? "顯示中" : "已下架"}
+                  </button>
+                </div>
+              )) : <p className="announcement-admin-history-empty">尚無歷史公告，發布第一則公告後會顯示在這裡。</p>}
             </div>
           </div>
         </div>
