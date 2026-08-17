@@ -29,13 +29,11 @@ export async function getReport(): Promise<PropertyReport> {
     }] : [];
     const announcements = Array.isArray(saved.announcements) ? saved.announcements : migratedLegacyAnnouncement;
     const hasViewingHistory = Array.isArray(saved.viewingTimes);
-    const viewingTimes = hasViewingHistory
+    const viewingTimes = (hasViewingHistory
       ? saved.viewingTimes!
-        .map((value) => String(value ?? ""))
-        .filter((value) => !value.trim() || isViewingOnOrAfterHistoryStart(value))
-      : (Array.isArray(saved.viewingThisWeekTimes) ? saved.viewingThisWeekTimes : [])
-        .map((value) => String(value ?? ""))
-        .filter(isViewingOnOrAfterHistoryStart);
+      : (Array.isArray(saved.viewingThisWeekTimes) ? saved.viewingThisWeekTimes : []))
+      .map((value) => String(value ?? ""))
+      .filter(isViewingOnOrAfterHistoryStart);
     const savedReport = { ...saved };
     delete savedReport.announcement;
     const savedViewingCount = Number(saved.viewingCount);
