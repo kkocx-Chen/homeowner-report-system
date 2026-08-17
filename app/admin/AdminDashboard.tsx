@@ -59,17 +59,21 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
   const setViewingCount = (value: string) => setReport((current) => {
     const parsed = Number(value);
     const count = Number.isFinite(parsed) ? Math.max(0, Math.min(200, Math.round(parsed))) : 0;
-    return {
-      ...current,
-      viewingCount: count,
-      viewingTimes: Array.from({ length: count }, (_, index) => current.viewingTimes?.[index] ?? ""),
-    };
+    return { ...current, viewingCount: count };
   });
   const setViewingTime = (index: number, value: string) => setReport((current) => {
-    const times = Array.from({ length: current.viewingCount }, (_, timeIndex) => current.viewingTimes?.[timeIndex] ?? "");
+    const times = [...current.viewingTimes];
     times[index] = value;
     return { ...current, viewingTimes: times };
   });
+  const addViewingTime = () => setReport((current) => ({
+    ...current,
+    viewingTimes: [...current.viewingTimes, ""],
+  }));
+  const removeViewingTime = (index: number) => setReport((current) => ({
+    ...current,
+    viewingTimes: current.viewingTimes.filter((_, timeIndex) => timeIndex !== index),
+  }));
   const setViewingThisWeek = (value: string) => setReport((current) => {
     const parsed = Number(value);
     const count = Number.isFinite(parsed) ? Math.max(0, Math.min(50, Math.round(parsed))) : 0;
@@ -235,7 +239,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         <div className="panel-heading"><span>02</span><div><h2>賞屋人數</h2><p>更新本週與累積賞屋熱度</p></div></div>
         <div className="form-grid three">
           <Field label="本週賞屋組數"><input type="number" min="0" max="50" value={report.viewingThisWeek} onChange={(e) => setViewingThisWeek(e.target.value)} /></Field>
-          <Field label="總賞屋組數（8/13 起）"><input type="number" min="0" max="200" value={report.viewingCount} onChange={(e) => setViewingCount(e.target.value)} /></Field>
+          <Field label="總賞屋組數"><input type="number" min="0" max="200" value={report.viewingCount} onChange={(e) => setViewingCount(e.target.value)} /></Field>
           <Field label="較上期成長 %"><input type="number" step="0.1" value={report.viewingGrowth} onChange={(e) => setNumber("viewingGrowth", e.target.value)} /></Field>
           <div className="weekly-viewing-admin">
             <div className="weekly-viewing-admin-heading">
@@ -252,15 +256,22 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
           </div>
           <div className="weekly-viewing-admin total-viewing-admin">
             <div className="weekly-viewing-admin-heading">
-              <strong>8/13 起累積帶看時間</strong>
-              <span>較早紀錄已排除，依總賞屋組數產生 {report.viewingCount} 個時間欄位</span>
+              <div><strong>總賞屋帶看時間</strong><span>只需新增手上有明確時間的紀錄，不必對應總賞屋組數</span></div>
+              <button type="button" className="viewing-time-add-button" onClick={addViewingTime} disabled={report.viewingTimes.length >= 200}>
+                <i className="bi bi-calendar2-plus" aria-hidden="true" />新增時間
+              </button>
             </div>
             <div className="weekly-viewing-admin-grid">
-              {report.viewingCount > 0 ? Array.from({ length: report.viewingCount }, (_, index) => (
-                <Field key={index} label={`第 ${index + 1} 組帶看時間`}>
-                  <input type="datetime-local" min="2026-08-13T00:00" value={report.viewingTimes?.[index] ?? ""} onChange={(e) => setViewingTime(index, e.target.value)} />
-                </Field>
-              )) : <p className="weekly-viewing-admin-empty">8/13 起尚無累積帶看紀錄。</p>}
+              {report.viewingTimes.length > 0 ? report.viewingTimes.map((time, index) => (
+                <div className="total-viewing-admin-row" key={index}>
+                  <Field label={`第 ${index + 1} 筆帶看時間`}>
+                    <input type="datetime-local" min="2026-08-13T00:00" value={time} onChange={(e) => setViewingTime(index, e.target.value)} />
+                  </Field>
+                  <button type="button" className="viewing-time-remove-button" onClick={() => removeViewingTime(index)} aria-label={`刪除第 ${index + 1} 筆帶看時間`}>
+                    <i className="bi bi-trash3" aria-hidden="true" />
+                  </button>
+                </div>
+              )) : <p className="weekly-viewing-admin-empty">尚未新增可查詢的帶看時間。</p>}
             </div>
           </div>
           <div className="buyer-admin-editor">

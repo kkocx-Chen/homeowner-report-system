@@ -23,13 +23,12 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
   const trend = Array.isArray(value.viewingTrend)
     ? value.viewingTrend.map(Number).filter(Number.isFinite).slice(-4)
     : defaultReport.viewingTrend;
-  const requestedViewingCount = Math.max(0, Math.min(200, Math.round(numeric("viewingCount"))));
+  const viewingCount = Math.max(0, Math.min(200, Math.round(numeric("viewingCount"))));
   const submittedCumulativeViewingTimes = Array.isArray(value.viewingTimes) ? value.viewingTimes : [];
-  const viewingTimes = Array.from(
-    { length: requestedViewingCount },
-    (_, index) => String(submittedCumulativeViewingTimes[index] ?? "").trim().slice(0, 60),
-  ).filter((viewingTime) => !viewingTime || isViewingOnOrAfterHistoryStart(viewingTime));
-  const viewingCount = viewingTimes.length;
+  const viewingTimes = submittedCumulativeViewingTimes
+    .map((viewingTime) => String(viewingTime ?? "").trim().slice(0, 60))
+    .filter((viewingTime) => viewingTime && isViewingOnOrAfterHistoryStart(viewingTime))
+    .slice(0, 200);
   const viewingThisWeek = Math.max(0, Math.min(50, Math.round(numeric("viewingThisWeek"))));
   const submittedViewingTimes = Array.isArray(value.viewingThisWeekTimes) ? value.viewingThisWeekTimes : [];
   const viewingThisWeekTimes = Array.from(

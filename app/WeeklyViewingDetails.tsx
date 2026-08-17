@@ -30,7 +30,10 @@ function ViewingDetails({ times, groups, label, kicker, title, emptyMessage, mod
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const groupCount = Math.max(0, Math.min(maxGroups, Math.round(groups)));
-  const viewingTimes = Array.from({ length: groupCount }, (_, index) => times?.[index] ?? "");
+  const viewingTimes = tone === "total"
+    ? times.slice(0, maxGroups)
+    : Array.from({ length: groupCount }, (_, index) => times?.[index] ?? "");
+  const modalCount = tone === "total" ? viewingTimes.length : groupCount;
 
   useEffect(() => {
     if (!open) return;
@@ -68,7 +71,7 @@ function ViewingDetails({ times, groups, label, kicker, title, emptyMessage, mod
         <p className="buyer-modal-kicker">{kicker}</p>
         <div className="buyer-modal-heading">
           <h3 id={modalTitleId}>{title}</h3>
-          <span className="viewing-modal-count">{groupCount} 組</span>
+          <span className="viewing-modal-count">{modalCount} {tone === "total" ? "筆" : "組"}</span>
         </div>
         <div className="viewing-time-list">
           {viewingTimes.length > 0 ? viewingTimes.map((time, index) => (
@@ -103,5 +106,5 @@ export function WeeklyViewingDetails({ times, groups }: { times: string[]; group
 }
 
 export function TotalViewingDetails({ times, groups }: { times: string[]; groups: number }) {
-  return <ViewingDetails times={times} groups={groups} label="總賞屋人數" kicker="8/13 起累積紀錄" title="每組帶看時間" emptyMessage="8/13 起尚無帶看紀錄" modalTitleId="total-viewing-modal-title" closeLabel="關閉累積帶看時間" tone="total" maxGroups={200} />;
+  return <ViewingDetails times={times} groups={groups} label="總賞屋人數" kicker="帶看時間紀錄" title="已登錄帶看時間" emptyMessage="尚無可查詢的帶看時間" modalTitleId="total-viewing-modal-title" closeLabel="關閉帶看時間紀錄" tone="total" maxGroups={200} />;
 }

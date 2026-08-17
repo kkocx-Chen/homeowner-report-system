@@ -58,7 +58,7 @@ export const defaultReport: PropertyReport = {
   reportPeriod: "2026 年 7 月銷售月報",
   saleStatus: "積極推廣中",
   statusNote: "曝光與詢問穩定成長",
-  viewingCount: 0,
+  viewingCount: 17,
   viewingTimes: [],
   viewingThisWeek: 5,
   viewingThisWeekTimes: ["", "", "", "", ""],

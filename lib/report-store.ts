@@ -38,10 +38,13 @@ export async function getReport(): Promise<PropertyReport> {
         .filter(isViewingOnOrAfterHistoryStart);
     const savedReport = { ...saved };
     delete savedReport.announcement;
+    const savedViewingCount = Number(saved.viewingCount);
     return {
       ...defaultReport,
       ...savedReport,
-      viewingCount: viewingTimes.length,
+      viewingCount: Number.isFinite(savedViewingCount)
+        ? Math.max(0, Math.min(200, Math.round(savedViewingCount)))
+        : defaultReport.viewingCount,
       viewingTimes,
       announcementEnabled: typeof saved.announcementEnabled === "boolean"
         ? saved.announcementEnabled
