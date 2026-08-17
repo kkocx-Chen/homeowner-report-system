@@ -5,7 +5,7 @@ import { defaultReport, parseComparableCases } from "../lib/report";
 import { RefreshTime } from "./RefreshTime";
 import { RollingNumber } from "./RollingNumber";
 import { ProspectiveBuyers } from "./ProspectiveBuyers";
-import { WeeklyViewingDetails } from "./WeeklyViewingDetails";
+import { TotalViewingDetails, WeeklyViewingDetails } from "./WeeklyViewingDetails";
 import { AnnouncementCenter } from "./AnnouncementModal";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +50,7 @@ export default async function Home() {
           </div>
           <div className="viewing-split">
             <WeeklyViewingDetails times={report.viewingThisWeekTimes} groups={report.viewingThisWeek} />
-            <div className="viewing-stat"><span>總賞屋人數</span><div><strong><RollingNumber value={report.viewingCount} /></strong><small>組</small></div></div>
+            <TotalViewingDetails times={report.viewingTimes} groups={report.viewingCount} />
           </div>
           <div className="metric-change up">↑ {report.viewingGrowth}% <span>較上期成長</span></div>
           <ProspectiveBuyers buyers={report.prospectiveBuyers} />

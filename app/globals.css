@@ -132,6 +132,7 @@ button { cursor: pointer; }
 .viewing-stat-button { position: relative; width: 100%; color: var(--ink); font: inherit; text-align: left; appearance: none; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .18s ease; -webkit-tap-highlight-color: rgba(217,121,88,.15); }
 .viewing-stat-button:active { transform: scale(.98); }
 .viewing-stat-button:focus-visible { outline: 3px solid rgba(217,121,88,.32); outline-offset: 2px; }
+.total-viewing-stat-button:focus-visible { outline-color: rgba(123,146,133,.42); }
 .viewing-stat-chevron { position: absolute; top: 13px; right: 12px; color: #9b7d70; font-size: 9px; }
 .prospect-accordion { margin-top: 16px; padding-top: 13px; border-top: 1px solid var(--line); }
 .prospect-trigger {
@@ -197,6 +198,8 @@ button { cursor: pointer; }
 .viewing-modal-icon { background: var(--clay-soft); color: #9c5b45; }
 .viewing-modal-card .buyer-modal-heading { padding-right: 0; }
 .viewing-modal-count { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; background: var(--clay-soft); color: #9c5b45; font-size: 10px; font-weight: 750; white-space: nowrap; }
+.total-viewing-modal-card .viewing-modal-icon, .total-viewing-modal-card .viewing-time-index { background: var(--sage-pale); color: #52705d; }
+.total-viewing-modal-card .viewing-modal-count { background: var(--sage-pale); color: #52705d; }
 .viewing-time-list { margin-top: 20px; display: grid; gap: 7px; }
 .viewing-time-row { min-width: 0; min-height: 48px; padding: 8px 11px; display: grid; grid-template-columns: 28px minmax(0,1fr); align-items: center; gap: 10px; border: 1px solid rgba(32,51,45,.08); border-radius: 12px; background: #f7f9f7; }
 .viewing-time-index { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #f1ded4; color: #a6634b; font-size: 10px; font-weight: 760; }
@@ -432,6 +435,7 @@ footer a { padding-bottom: 3px; border-bottom: 1px solid #829087; }
 .weekly-viewing-admin-heading span { color: #8a948f; font-size: 9px; }
 .weekly-viewing-admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .weekly-viewing-admin-empty { grid-column: 1 / -1; margin: 0; padding: 15px; border: 1px dashed var(--line); color: #8a948f; font-size: 10px; text-align: center; }
+.total-viewing-admin { border-color: rgba(123,146,133,.2); background: #f7faf7; }
 .buyer-admin-editor { grid-column: 1 / -1; margin-top: 3px; padding-top: 23px; border-top: 1px solid var(--line); }
 .buyer-admin-heading { margin-bottom: 13px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .buyer-admin-heading > div { display: flex; flex-direction: column; gap: 4px; }

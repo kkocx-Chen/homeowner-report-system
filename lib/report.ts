@@ -22,6 +22,7 @@ export type PropertyReport = {
   saleStatus: string;
   statusNote: string;
   viewingCount: number;
+  viewingTimes: string[];
   viewingThisWeek: number;
   viewingThisWeekTimes: string[];
   viewingGrowth: number;
@@ -57,7 +58,8 @@ export const defaultReport: PropertyReport = {
   reportPeriod: "2026 年 7 月銷售月報",
   saleStatus: "積極推廣中",
   statusNote: "曝光與詢問穩定成長",
-  viewingCount: 17,
+  viewingCount: 0,
+  viewingTimes: [],
   viewingThisWeek: 5,
   viewingThisWeekTimes: ["", "", "", "", ""],
   viewingGrowth: 28.6,
@@ -89,6 +91,13 @@ export const defaultReport: PropertyReport = {
   announcements: [],
   updatedAt: "2026-08-06T01:30:00.000Z",
 };
+
+export const viewingHistoryStartDate = "2026-08-13";
+
+export function isViewingOnOrAfterHistoryStart(value: string) {
+  const date = /^(\d{4}-\d{2}-\d{2})/.exec(value.trim())?.[1];
+  return Boolean(date && date >= viewingHistoryStartDate);
+}
 
 export function parseComparableCases(value: string) {
   return value.split("\n").filter(Boolean).slice(0, 5).map((line) => {

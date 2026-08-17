@@ -1,5 +1,5 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { defaultReport, type Announcement, type PropertyReport } from "./report";
+import { defaultReport, isViewingOnOrAfterHistoryStart, type Announcement, type PropertyReport } from "./report";
 
 type LegacyAnnouncement = Partial<Omit<Announcement, "id" | "publishedAt">>;
 type StoredReport = Partial<PropertyReport> & { announcement?: LegacyAnnouncement };
@@ -28,11 +28,21 @@ export async function getReport(): Promise<PropertyReport> {
       publishedAt: typeof saved.updatedAt === "string" ? saved.updatedAt : defaultReport.updatedAt,
     }] : [];
     const announcements = Array.isArray(saved.announcements) ? saved.announcements : migratedLegacyAnnouncement;
+    const hasViewingHistory = Array.isArray(saved.viewingTimes);
+    const viewingTimes = hasViewingHistory
+      ? saved.viewingTimes!
+        .map((value) => String(value ?? ""))
+        .filter((value) => !value.trim() || isViewingOnOrAfterHistoryStart(value))
+      : (Array.isArray(saved.viewingThisWeekTimes) ? saved.viewingThisWeekTimes : [])
+        .map((value) => String(value ?? ""))
+        .filter(isViewingOnOrAfterHistoryStart);
     const savedReport = { ...saved };
     delete savedReport.announcement;
     return {
       ...defaultReport,
       ...savedReport,
+      viewingCount: viewingTimes.length,
+      viewingTimes,
       announcementEnabled: typeof saved.announcementEnabled === "boolean"
         ? saved.announcementEnabled
         : legacyAnnouncement?.enabled === true,

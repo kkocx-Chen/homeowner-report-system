@@ -12,11 +12,24 @@ function formatViewingTime(value: string) {
   return value.trim() || "時間尚未填寫";
 }
 
-export function WeeklyViewingDetails({ times, groups }: { times: string[]; groups: number }) {
+type ViewingDetailsProps = {
+  times: string[];
+  groups: number;
+  label: string;
+  kicker: string;
+  title: string;
+  emptyMessage: string;
+  modalTitleId: string;
+  closeLabel: string;
+  tone?: "weekly" | "total";
+  maxGroups?: number;
+};
+
+function ViewingDetails({ times, groups, label, kicker, title, emptyMessage, modalTitleId, closeLabel, tone = "weekly", maxGroups = 50 }: ViewingDetailsProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const groupCount = Math.max(0, Math.min(50, Math.round(groups)));
+  const groupCount = Math.max(0, Math.min(maxGroups, Math.round(groups)));
   const viewingTimes = Array.from({ length: groupCount }, (_, index) => times?.[index] ?? "");
 
   useEffect(() => {
@@ -46,15 +59,15 @@ export function WeeklyViewingDetails({ times, groups }: { times: string[]; group
 
   const modal = open && typeof document !== "undefined" ? createPortal(
     <div className="buyer-modal-backdrop">
-      <button type="button" className="buyer-modal-dismiss" onClick={closeDetails} aria-label="關閉本週帶看時間" tabIndex={-1} />
-      <section className="buyer-modal-card viewing-modal-card" role="dialog" aria-modal="true" aria-labelledby="weekly-viewing-modal-title">
-        <button ref={closeButtonRef} type="button" className="buyer-modal-close" onClick={closeDetails} aria-label="關閉本週帶看時間">
+      <button type="button" className="buyer-modal-dismiss" onClick={closeDetails} aria-label={closeLabel} tabIndex={-1} />
+      <section className={`buyer-modal-card viewing-modal-card ${tone === "total" ? "total-viewing-modal-card" : ""}`} role="dialog" aria-modal="true" aria-labelledby={modalTitleId}>
+        <button ref={closeButtonRef} type="button" className="buyer-modal-close" onClick={closeDetails} aria-label={closeLabel}>
           <i className="bi bi-x-lg" aria-hidden="true" />
         </button>
         <span className="buyer-modal-icon viewing-modal-icon" aria-hidden="true"><i className="bi bi-calendar2-check-fill" /></span>
-        <p className="buyer-modal-kicker">本週賞屋紀錄</p>
+        <p className="buyer-modal-kicker">{kicker}</p>
         <div className="buyer-modal-heading">
-          <h3 id="weekly-viewing-modal-title">每組帶看時間</h3>
+          <h3 id={modalTitleId}>{title}</h3>
           <span className="viewing-modal-count">{groupCount} 組</span>
         </div>
         <div className="viewing-time-list">
@@ -66,7 +79,7 @@ export function WeeklyViewingDetails({ times, groups }: { times: string[]; group
                 <strong>{formatViewingTime(time)}</strong>
               </div>
             </div>
-          )) : <p className="viewing-time-empty">本週尚無帶看紀錄</p>}
+          )) : <p className="viewing-time-empty">{emptyMessage}</p>}
         </div>
       </section>
     </div>,
@@ -75,12 +88,20 @@ export function WeeklyViewingDetails({ times, groups }: { times: string[]; group
 
   return (
     <>
-      <button ref={triggerRef} type="button" className="viewing-stat viewing-stat-button" onClick={() => setOpen(true)} aria-haspopup="dialog">
-        <span>本週賞屋人數</span>
+      <button ref={triggerRef} type="button" className={`viewing-stat viewing-stat-button ${tone === "total" ? "total-viewing-stat-button" : ""}`} onClick={() => setOpen(true)} aria-haspopup="dialog">
+        <span>{label}</span>
         <div><strong><RollingNumber value={groups} /></strong><small>組</small></div>
         <i className="bi bi-chevron-right viewing-stat-chevron" aria-hidden="true" />
       </button>
       {modal}
     </>
   );
+}
+
+export function WeeklyViewingDetails({ times, groups }: { times: string[]; groups: number }) {
+  return <ViewingDetails times={times} groups={groups} label="本週賞屋人數" kicker="本週賞屋紀錄" title="每組帶看時間" emptyMessage="本週尚無帶看紀錄" modalTitleId="weekly-viewing-modal-title" closeLabel="關閉本週帶看時間" />;
+}
+
+export function TotalViewingDetails({ times, groups }: { times: string[]; groups: number }) {
+  return <ViewingDetails times={times} groups={groups} label="總賞屋人數" kicker="8/13 起累積紀錄" title="每組帶看時間" emptyMessage="8/13 起尚無帶看紀錄" modalTitleId="total-viewing-modal-title" closeLabel="關閉累積帶看時間" tone="total" maxGroups={200} />;
 }
