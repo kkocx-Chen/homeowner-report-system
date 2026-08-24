@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { defaultReport, type PropertyReport, type ProspectiveBuyer } from "../../lib/report";
+import { defaultReport, type NegotiationRecord, type PropertyReport, type ProspectiveBuyer } from "../../lib/report";
 
 type AnnouncementDraft = {
   title: string;
@@ -12,7 +12,7 @@ type AnnouncementDraft = {
 
 const emptyAnnouncementDraft: AnnouncementDraft = { title: "", body: "", imageUrl: "" };
 
-function newAnnouncementId() {
+function newRecordId() {
   return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `announcement-${Date.now()}`;
 }
 
@@ -98,6 +98,27 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
     ...current,
     announcements: current.announcements.map((announcement) => announcement.id === id ? { ...announcement, enabled } : announcement),
   }));
+  const updateNegotiationRecord = (id: string, patch: Partial<NegotiationRecord>) => setReport((current) => ({
+    ...current,
+    negotiationRecords: current.negotiationRecords.map((record) => record.id === id ? { ...record, ...patch } : record),
+  }));
+  const addNegotiationRecord = () => setReport((current) => ({
+    ...current,
+    negotiationRecords: [...current.negotiationRecords, {
+      id: newRecordId(),
+      buyerLabel: `買方 ${current.negotiationRecords.length + 1}`,
+      receivedAt: "",
+      offerPrice: null,
+      earnestMoney: null,
+      status: "negotiating",
+      note: "",
+      createdAt: new Date().toISOString(),
+    }],
+  }));
+  const removeNegotiationRecord = (id: string) => setReport((current) => ({
+    ...current,
+    negotiationRecords: current.negotiationRecords.filter((record) => record.id !== id),
+  }));
   const updateProspectiveBuyer = (index: number, patch: Partial<ProspectiveBuyer>) => setReport((current) => ({
     ...current,
     prospectiveBuyers: current.prospectiveBuyers.map((buyer, buyerIndex) => buyerIndex === index ? { ...buyer, ...patch } : buyer),
@@ -142,7 +163,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       ...report,
       announcementEnabled: true,
       announcements: [{
-        id: newAnnouncementId(),
+        id: newRecordId(),
         enabled: true,
         title: announcementDraft.title.trim(),
         body: announcementDraft.body.trim(),
@@ -367,7 +388,46 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>06</span><div><h2>公告中心</h2><p>發布新公告並保留過往公告紀錄</p></div></div>
+        <div className="panel-heading"><span>06</span><div><h2>斡旋紀錄</h2><p>管理屋主頁右上角顯示的收斡旋紀錄</p></div></div>
+        <div className="negotiation-admin-editor">
+          <div className="buyer-admin-heading">
+            <div><strong>收斡旋紀錄</strong><span>前台角標會自動顯示目前的紀錄筆數</span></div>
+            <button type="button" className="buyer-add-button" onClick={addNegotiationRecord} disabled={report.negotiationRecords.length >= 50}>
+              <i className="bi bi-file-earmark-plus" aria-hidden="true" />新增斡旋
+            </button>
+          </div>
+          <div className="negotiation-admin-list">
+            {report.negotiationRecords.length > 0 ? report.negotiationRecords.map((record, index) => (
+              <div className="negotiation-admin-row" key={record.id}>
+                <div className="negotiation-admin-row-heading">
+                  <strong>第 {index + 1} 筆斡旋</strong>
+                  <button type="button" onClick={() => removeNegotiationRecord(record.id)} aria-label={`刪除第 ${index + 1} 筆斡旋`}>
+                    <i className="bi bi-trash3" aria-hidden="true" />刪除
+                  </button>
+                </div>
+                <div className="form-grid three">
+                  <Field label="買方名稱"><input value={record.buyerLabel} onChange={(event) => updateNegotiationRecord(record.id, { buyerLabel: event.target.value })} placeholder={`買方 ${index + 1}`} /></Field>
+                  <Field label="收斡旋時間"><input type="datetime-local" value={record.receivedAt} onChange={(event) => updateNegotiationRecord(record.id, { receivedAt: event.target.value })} /></Field>
+                  <Field label="目前狀態">
+                    <select value={record.status} onChange={(event) => updateNegotiationRecord(record.id, { status: event.target.value as NegotiationRecord["status"] })}>
+                      <option value="negotiating">協商中</option>
+                      <option value="accepted">已成交</option>
+                      <option value="declined">未成立</option>
+                      <option value="withdrawn">已撤回</option>
+                    </select>
+                  </Field>
+                  <Field label="買方出價（萬元）"><input type="number" min="0" step="0.01" value={record.offerPrice ?? ""} onChange={(event) => updateNegotiationRecord(record.id, { offerPrice: event.target.value === "" ? null : Number(event.target.value) })} placeholder="待補" /></Field>
+                  <Field label="斡旋金（萬元）"><input type="number" min="0" step="0.01" value={record.earnestMoney ?? ""} onChange={(event) => updateNegotiationRecord(record.id, { earnestMoney: event.target.value === "" ? null : Number(event.target.value) })} placeholder="待補" /></Field>
+                  <Field label="進度備註" wide><textarea value={record.note} onChange={(event) => updateNegotiationRecord(record.id, { note: event.target.value })} placeholder="例如：已向屋主呈報，買賣雙方持續協商中" /></Field>
+                </div>
+              </div>
+            )) : <p className="buyer-admin-empty">目前沒有斡旋紀錄，前台不會顯示斡旋按鈕。</p>}
+          </div>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>07</span><div><h2>公告中心</h2><p>發布新公告並保留過往公告紀錄</p></div></div>
         <div className="form-grid">
           <button type="button" className={`announcement-toggle wide ${report.announcementEnabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcementEnabled} onClick={() => setReport((current) => ({ ...current, announcementEnabled: !current.announcementEnabled }))}>
             <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告中心</strong><small>開啟時，前台右上角會顯示公告入口；公告不會再自動彈出。</small></span>

@@ -7,6 +7,7 @@ import { RollingNumber } from "./RollingNumber";
 import { ProspectiveBuyers } from "./ProspectiveBuyers";
 import { TotalViewingDetails, WeeklyViewingDetails } from "./WeeklyViewingDetails";
 import { AnnouncementCenter } from "./AnnouncementModal";
+import { NegotiationCenter } from "./NegotiationCenter";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export default async function Home() {
           <span>屋主銷售進度</span>
         </Link>
         <div className="topbar-actions">
+          <NegotiationCenter records={report.negotiationRecords} />
           <AnnouncementCenter enabled={report.announcementEnabled} announcements={report.announcements} />
           <RefreshTime />
         </div>

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { isAdmin } from "../../../lib/admin-auth";
 import { isAnnouncementImageUrl, removeAnnouncementImage } from "../../../lib/announcement-image";
-import { defaultReport, isViewingOnOrAfterHistoryStart, type PropertyReport } from "../../../lib/report";
+import { defaultReport, isViewingOnOrAfterHistoryStart, type NegotiationRecord, type PropertyReport } from "../../../lib/report";
 import { getReport, writeReport } from "../../../lib/report-store";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +70,35 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
       }];
     })
     .sort((left, right) => new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime());
+  const previousNegotiations = new Map(previousReport.negotiationRecords.map((record) => [record.id, record]));
+  const negotiationRecords = (Array.isArray(value.negotiationRecords) ? value.negotiationRecords : previousReport.negotiationRecords)
+    .slice(0, 50)
+    .flatMap((item, index) => {
+      if (!item || typeof item !== "object") return [];
+      const submitted = item as Record<string, unknown>;
+      const submittedId = String(submitted.id ?? "").trim().slice(0, 100);
+      const previous = previousNegotiations.get(submittedId);
+      const optionalAmount = (amount: unknown) => {
+        if (amount === "" || amount === null || amount === undefined) return null;
+        const parsed = Number(amount);
+        return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed * 100) / 100 : null;
+      };
+      const submittedStatus = String(submitted.status ?? "");
+      const status: NegotiationRecord["status"] = submittedStatus === "accepted" || submittedStatus === "declined" || submittedStatus === "withdrawn"
+        ? submittedStatus
+        : "negotiating";
+
+      return [{
+        id: previous?.id ?? randomUUID(),
+        buyerLabel: String(submitted.buyerLabel ?? `買方 ${index + 1}`).trim().slice(0, 80) || `買方 ${index + 1}`,
+        receivedAt: String(submitted.receivedAt ?? "").trim().slice(0, 60),
+        offerPrice: optionalAmount(submitted.offerPrice),
+        earnestMoney: optionalAmount(submitted.earnestMoney),
+        status,
+        note: String(submitted.note ?? "").trim().slice(0, 1200),
+        createdAt: previous?.createdAt ?? new Date().toISOString(),
+      }];
+    });
 
   return {
     propertyName: text("propertyName", 80), address: text("address", 160), reportPeriod: text("reportPeriod", 80),
@@ -88,6 +117,7 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
     agentName: text("agentName", 40), agentTitle: text("agentTitle", 80), agentPhone: text("agentPhone", 40),
     announcementEnabled: value.announcementEnabled === true,
     announcements,
+    negotiationRecords,
     updatedAt: new Date().toISOString(),
   };
 }

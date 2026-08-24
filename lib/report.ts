@@ -15,6 +15,17 @@ export type Announcement = {
   publishedAt: string;
 };
 
+export type NegotiationRecord = {
+  id: string;
+  buyerLabel: string;
+  receivedAt: string;
+  offerPrice: number | null;
+  earnestMoney: number | null;
+  status: "negotiating" | "accepted" | "declined" | "withdrawn";
+  note: string;
+  createdAt: string;
+};
+
 export type PropertyReport = {
   propertyName: string;
   address: string;
@@ -49,6 +60,7 @@ export type PropertyReport = {
   agentPhone: string;
   announcementEnabled: boolean;
   announcements: Announcement[];
+  negotiationRecords: NegotiationRecord[];
   updatedAt: string;
 };
 
@@ -89,6 +101,16 @@ export const defaultReport: PropertyReport = {
   agentPhone: "0912-345-678",
   announcementEnabled: false,
   announcements: [],
+  negotiationRecords: [{
+    id: "negotiation-1",
+    buyerLabel: "買方 1",
+    receivedAt: "",
+    offerPrice: null,
+    earnestMoney: null,
+    status: "negotiating",
+    note: "",
+    createdAt: "2026-08-24T00:00:00.000Z",
+  }],
   updatedAt: "2026-08-06T01:30:00.000Z",
 };
 

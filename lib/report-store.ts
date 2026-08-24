@@ -28,6 +28,7 @@ export async function getReport(): Promise<PropertyReport> {
       publishedAt: typeof saved.updatedAt === "string" ? saved.updatedAt : defaultReport.updatedAt,
     }] : [];
     const announcements = Array.isArray(saved.announcements) ? saved.announcements : migratedLegacyAnnouncement;
+    const negotiationRecords = Array.isArray(saved.negotiationRecords) ? saved.negotiationRecords : defaultReport.negotiationRecords;
     const hasViewingHistory = Array.isArray(saved.viewingTimes);
     const viewingTimes = (hasViewingHistory
       ? saved.viewingTimes!
@@ -48,6 +49,7 @@ export async function getReport(): Promise<PropertyReport> {
         ? saved.announcementEnabled
         : legacyAnnouncement?.enabled === true,
       announcements,
+      negotiationRecords,
     } as PropertyReport;
   } catch {
     await mkdir(files.directory, { recursive: true });
