@@ -37,11 +37,25 @@ export function NegotiationCenter({ records }: { records: NegotiationRecord[] })
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const sortedRecords = [...records].sort((left, right) => {
-    const leftTime = new Date(left.receivedAt || left.createdAt).getTime();
-    const rightTime = new Date(right.receivedAt || right.createdAt).getTime();
-    return rightTime - leftTime;
-  });
+  const sortedRecords = records
+    .map((record, sourceIndex) => ({ record, sourceIndex }))
+    .sort((left, right) => {
+      const leftReceivedAt = left.record.receivedAt ? new Date(left.record.receivedAt).getTime() : null;
+      const rightReceivedAt = right.record.receivedAt ? new Date(right.record.receivedAt).getTime() : null;
+
+      if (leftReceivedAt !== null && rightReceivedAt !== null && leftReceivedAt !== rightReceivedAt) {
+        return rightReceivedAt - leftReceivedAt;
+      }
+      if (leftReceivedAt !== null && rightReceivedAt === null) return -1;
+      if (leftReceivedAt === null && rightReceivedAt !== null) return 1;
+
+      const leftCreatedAt = new Date(left.record.createdAt).getTime();
+      const rightCreatedAt = new Date(right.record.createdAt).getTime();
+      if (leftCreatedAt !== rightCreatedAt) return rightCreatedAt - leftCreatedAt;
+
+      return right.sourceIndex - left.sourceIndex;
+    })
+    .map(({ record }) => record);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => setMounted(true));
