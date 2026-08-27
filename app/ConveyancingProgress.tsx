@@ -19,8 +19,7 @@ function displayDate(value: string) {
 export function ConveyancingProgress({ process }: { process: ConveyancingProcess }) {
   if (!process.enabled) return null;
 
-  const currentIndex = Math.max(0, conveyancingSteps.findIndex((step) => step.id === process.currentStep));
-  const currentStep = conveyancingSteps[currentIndex];
+  const currentStep = conveyancingSteps.find((step) => step.id === process.currentStep) ?? conveyancingSteps[0];
 
   return (
     <article className="metric-card conveyancing-card" aria-labelledby="conveyancing-title">
@@ -40,18 +39,6 @@ export function ConveyancingProgress({ process }: { process: ConveyancingProcess
         </div>
         <time dateTime={process.scheduledDate}>{displayDate(process.scheduledDate)}</time>
       </div>
-
-      <ol className="conveyancing-steps" aria-label={`代書流程目前進行至${currentStep.label}`}>
-        {conveyancingSteps.map((step, index) => {
-          const state = index < currentIndex ? "complete" : index === currentIndex ? "current" : "upcoming";
-          return (
-            <li className={`is-${state}`} key={step.id} aria-current={state === "current" ? "step" : undefined}>
-              <span>{state === "complete" ? <i className="bi bi-check-lg" aria-hidden="true" /> : index + 1}</span>
-              <strong>{step.label}</strong>
-            </li>
-          );
-        })}
-      </ol>
     </article>
   );
 }
