@@ -117,7 +117,7 @@ button { cursor: pointer; }
   border: 1px solid rgba(32,51,45,.055); border-radius: 18px; box-shadow: var(--shadow);
 }
 .metric-card.featured { grid-column: auto; min-height: 265px; background: var(--card); }
-.conveyancing-card { min-height: 0; padding: 22px; overflow: hidden; background: linear-gradient(145deg, #fffdf8 0%, #f4eee5 100%); border-color: rgba(131,103,72,.09); }
+.metric-card.conveyancing-card { min-height: 0; height: fit-content; padding: 18px; overflow: hidden; background: linear-gradient(145deg, #fffdf8 0%, #f4eee5 100%); border-color: rgba(131,103,72,.09); }
 .conveyancing-heading { display: flex; align-items: center; gap: 12px; }
 .conveyancing-icon { width: 42px; height: 42px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 13px; background: #e5ecdf; color: #577063; font-size: 17px; }
 .conveyancing-heading > div { min-width: 0; }
@@ -125,7 +125,7 @@ button { cursor: pointer; }
 .conveyancing-heading p { margin: 2px 0 0; color: #7d8983; font-size: 10px; line-height: 1.4; }
 .conveyancing-state { min-height: 25px; margin-left: auto; padding: 0 9px; display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; border-radius: 999px; background: #e5eee7; color: #53715f; font-size: 9px; font-weight: 750; }
 .conveyancing-state i { width: 6px; height: 6px; border-radius: 50%; background: #6f9b78; box-shadow: 0 0 0 3px rgba(111,155,120,.13); }
-.conveyancing-current { margin-top: 18px; padding: 17px 18px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-radius: 15px; background: linear-gradient(135deg, #2c433a, #1f352d); color: #fff8ee; box-shadow: 0 12px 25px rgba(32,51,45,.12); }
+.conveyancing-current { margin-top: 14px; padding: 13px 16px; display: flex; align-items: center; justify-content: space-between; gap: 18px; border-radius: 14px; background: linear-gradient(135deg, #2c433a, #1f352d); color: #fff8ee; box-shadow: 0 12px 25px rgba(32,51,45,.12); }
 .conveyancing-current > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .conveyancing-current span { color: rgba(255,255,255,.58); font-size: 9px; }
 .conveyancing-current strong { font-size: 25px; line-height: 1.2; letter-spacing: -.035em; }
