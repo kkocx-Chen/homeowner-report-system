@@ -99,6 +99,22 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
         createdAt: previous?.createdAt ?? new Date().toISOString(),
       }];
     });
+  const submittedConveyancingProcess = value.conveyancingProcess && typeof value.conveyancingProcess === "object"
+    ? value.conveyancingProcess
+    : previousReport.conveyancingProcess;
+  const submittedConveyancingStep = String(submittedConveyancingProcess.currentStep ?? "");
+  const conveyancingStep = submittedConveyancingStep === "offer" || submittedConveyancingStep === "meeting"
+    || submittedConveyancingStep === "contract" || submittedConveyancingStep === "seal"
+    || submittedConveyancingStep === "tax" || submittedConveyancingStep === "transfer"
+    || submittedConveyancingStep === "handover"
+    ? submittedConveyancingStep
+    : defaultReport.conveyancingProcess.currentStep;
+  const submittedConveyancingDate = String(submittedConveyancingProcess.scheduledDate ?? "").trim();
+  const conveyancingProcess = {
+    enabled: submittedConveyancingProcess.enabled === true,
+    currentStep: conveyancingStep,
+    scheduledDate: /^\d{4}-\d{2}-\d{2}$/.test(submittedConveyancingDate) ? submittedConveyancingDate : "",
+  };
 
   return {
     propertyName: text("propertyName", 80), address: text("address", 160), reportPeriod: text("reportPeriod", 80),
@@ -118,6 +134,7 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
     announcementEnabled: value.announcementEnabled === true,
     announcements,
     negotiationRecords,
+    conveyancingProcess,
     updatedAt: new Date().toISOString(),
   };
 }

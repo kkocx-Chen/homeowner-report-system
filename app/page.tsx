@@ -8,6 +8,7 @@ import { ProspectiveBuyers } from "./ProspectiveBuyers";
 import { TotalViewingDetails, WeeklyViewingDetails } from "./WeeklyViewingDetails";
 import { AnnouncementCenter } from "./AnnouncementModal";
 import { NegotiationCenter } from "./NegotiationCenter";
+import { ConveyancingProgress } from "./ConveyancingProgress";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ export default async function Home() {
       </header>
 
       <section className="summary-grid" id="overview" aria-label="本期摘要">
+        <ConveyancingProgress process={report.conveyancingProcess} />
         <article className="metric-card featured">
           <div className="metric-heading">
             <MetricIcon>人</MetricIcon>

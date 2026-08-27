@@ -93,6 +93,10 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
     const otherValue = key === "view591Desktop" ? current.view591Mobile : current.view591Desktop;
     return { ...current, [key]: nextValue, view591Count: nextValue + otherValue };
   });
+  const setConveyancingProcess = (patch: Partial<PropertyReport["conveyancingProcess"]>) => setReport((current) => ({
+    ...current,
+    conveyancingProcess: { ...current.conveyancingProcess, ...patch },
+  }));
   const setAnnouncementDraftValue = (patch: Partial<AnnouncementDraft>) => setAnnouncementDraft((current) => ({ ...current, ...patch }));
   const updateAnnouncementVisibility = (id: string, enabled: boolean) => setReport((current) => ({
     ...current,
@@ -257,7 +261,29 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>02</span><div><h2>賞屋人數</h2><p>更新本週與累積賞屋熱度</p></div></div>
+        <div className="panel-heading"><span>02</span><div><h2>代書流程</h2><p>更新屋主頁最上方的簽約與過戶進度</p></div></div>
+        <div className="form-grid">
+          <button type="button" className={`announcement-toggle wide ${report.conveyancingProcess.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.conveyancingProcess.enabled} onClick={() => setConveyancingProcess({ enabled: !report.conveyancingProcess.enabled })}>
+            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span>
+            <span className="announcement-toggle-copy"><strong>顯示代書流程卡片</strong><small>開啟時，卡片會顯示在賞屋人數上方。</small></span>
+          </button>
+          <Field label="目前最新流程">
+            <select value={report.conveyancingProcess.currentStep} onChange={(event) => setConveyancingProcess({ currentStep: event.target.value as PropertyReport["conveyancingProcess"]["currentStep"] })}>
+              <option value="offer">收斡旋</option>
+              <option value="meeting">見面談</option>
+              <option value="contract">簽約</option>
+              <option value="seal">用印</option>
+              <option value="tax">完稅</option>
+              <option value="transfer">過戶</option>
+              <option value="handover">交屋</option>
+            </select>
+          </Field>
+          <Field label="流程日期"><input type="date" value={report.conveyancingProcess.scheduledDate} onChange={(event) => setConveyancingProcess({ scheduledDate: event.target.value })} /></Field>
+        </div>
+      </section>
+
+      <section className="admin-panel">
+        <div className="panel-heading"><span>03</span><div><h2>賞屋人數</h2><p>更新本週與累積賞屋熱度</p></div></div>
         <div className="form-grid three">
           <Field label="本週賞屋組數"><input type="number" min="0" max="50" value={report.viewingThisWeek} onChange={(e) => setViewingThisWeek(e.target.value)} /></Field>
           <Field label="總賞屋組數"><input type="number" min="0" max="200" value={report.viewingCount} onChange={(e) => setViewingCount(e.target.value)} /></Field>
@@ -351,7 +377,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>03</span><div><h2>周遭行情</h2><p>用總價、單價與近期成交呈現市場位置</p></div></div>
+        <div className="panel-heading"><span>04</span><div><h2>周遭行情</h2><p>用總價、單價與近期成交呈現市場位置</p></div></div>
         <div className="form-grid three">
           <Field label="區域低標（萬）"><input type="number" value={report.marketLow} onChange={(e) => setNumber("marketLow", e.target.value)} /></Field>
           <Field label="區域中位（萬）"><input type="number" value={report.marketMedian} onChange={(e) => setNumber("marketMedian", e.target.value)} /></Field>
@@ -365,7 +391,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>04</span><div><h2>591 瀏覽次數</h2><p>無需爬蟲，依 591 後台數據手動同步</p></div></div>
+        <div className="panel-heading"><span>05</span><div><h2>591 瀏覽次數</h2><p>無需爬蟲，依 591 後台數據手動同步</p></div></div>
         <div className="form-grid three">
           <Field label="電腦瀏覽次數"><input type="number" value={report.view591Desktop} onChange={(e) => set591Device("view591Desktop", e.target.value)} /></Field>
           <Field label="手機瀏覽次數"><input type="number" value={report.view591Mobile} onChange={(e) => set591Device("view591Mobile", e.target.value)} /></Field>
@@ -376,7 +402,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>05</span><div><h2>專員個人分析</h2><p>用白話整理市場回饋與下一步建議</p></div></div>
+        <div className="panel-heading"><span>06</span><div><h2>專員個人分析</h2><p>用白話整理市場回饋與下一步建議</p></div></div>
         <div className="form-grid">
           <Field label="分析重點" wide><input value={report.analysisHeadline} onChange={(e) => setText("analysisHeadline", e.target.value)} /></Field>
           <Field label="完整分析" wide><textarea className="tall" value={report.analysisBody} onChange={(e) => setText("analysisBody", e.target.value)} /></Field>
@@ -388,7 +414,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>06</span><div><h2>斡旋紀錄</h2><p>管理屋主頁右上角顯示的收斡旋紀錄</p></div></div>
+        <div className="panel-heading"><span>07</span><div><h2>斡旋紀錄</h2><p>管理屋主頁右上角顯示的收斡旋紀錄</p></div></div>
         <div className="negotiation-admin-editor">
           <div className="buyer-admin-heading">
             <div><strong>收斡旋紀錄</strong><span>前台角標會自動顯示目前的紀錄筆數</span></div>
@@ -427,7 +453,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>07</span><div><h2>公告中心</h2><p>發布新公告並保留過往公告紀錄</p></div></div>
+        <div className="panel-heading"><span>08</span><div><h2>公告中心</h2><p>發布新公告並保留過往公告紀錄</p></div></div>
         <div className="form-grid">
           <button type="button" className={`announcement-toggle wide ${report.announcementEnabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcementEnabled} onClick={() => setReport((current) => ({ ...current, announcementEnabled: !current.announcementEnabled }))}>
             <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span><span className="announcement-toggle-copy"><strong>啟用公告中心</strong><small>開啟時，前台右上角會顯示公告入口；公告不會再自動彈出。</small></span>
