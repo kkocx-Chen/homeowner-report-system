@@ -97,6 +97,13 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
     ...current,
     conveyancingProcess: { ...current.conveyancingProcess, ...patch },
   }));
+  const setTerminationNotice = (patch: Partial<PropertyReport["terminationNotice"]>) => setReport((current) => ({
+    ...current,
+    terminationNotice: { ...current.terminationNotice, ...patch },
+    conveyancingProcess: patch.enabled === true
+      ? { ...current.conveyancingProcess, enabled: false }
+      : current.conveyancingProcess,
+  }));
   const setAnnouncementDraftValue = (patch: Partial<AnnouncementDraft>) => setAnnouncementDraft((current) => ({ ...current, ...patch }));
   const updateAnnouncementVisibility = (id: string, enabled: boolean) => setReport((current) => ({
     ...current,
@@ -261,14 +268,19 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       </section>
 
       <section className="admin-panel">
-        <div className="panel-heading"><span>02</span><div><h2>代書流程</h2><p>更新屋主頁最上方的簽約與過戶進度</p></div></div>
+        <div className="panel-heading"><span>02</span><div><h2>案件狀態與代書流程</h2><p>顯示解約資訊，或更新簽約與過戶進度</p></div></div>
         <div className="form-grid">
-          <button type="button" className={`announcement-toggle wide ${report.conveyancingProcess.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.conveyancingProcess.enabled} onClick={() => setConveyancingProcess({ enabled: !report.conveyancingProcess.enabled })}>
+          <button type="button" className={`announcement-toggle wide ${report.terminationNotice.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.terminationNotice.enabled} onClick={() => setTerminationNotice({ enabled: !report.terminationNotice.enabled })}>
             <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span>
-            <span className="announcement-toggle-copy"><strong>顯示代書流程卡片</strong><small>開啟時，卡片會顯示在賞屋人數上方。</small></span>
+            <span className="announcement-toggle-copy"><strong>顯示解約通知</strong><small>開啟後顯示在賞屋人數右側，並關閉代書流程卡片。</small></span>
+          </button>
+          <Field label="解約時間" wide><input type="datetime-local" value={report.terminationNotice.terminatedAt} onChange={(event) => setTerminationNotice({ terminatedAt: event.target.value })} disabled={!report.terminationNotice.enabled} /></Field>
+          <button type="button" className={`announcement-toggle wide ${report.conveyancingProcess.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.conveyancingProcess.enabled} onClick={() => setConveyancingProcess({ enabled: !report.conveyancingProcess.enabled })} disabled={report.terminationNotice.enabled}>
+            <span className="announcement-toggle-control" aria-hidden="true"><i className="bi bi-check-lg" /></span>
+            <span className="announcement-toggle-copy"><strong>顯示代書流程卡片</strong><small>{report.terminationNotice.enabled ? "解約通知開啟時，代書流程會自動關閉。" : "開啟時，卡片會顯示在賞屋人數上方。"}</small></span>
           </button>
           <Field label="目前最新流程">
-            <select value={report.conveyancingProcess.currentStep} onChange={(event) => setConveyancingProcess({ currentStep: event.target.value as PropertyReport["conveyancingProcess"]["currentStep"] })}>
+            <select value={report.conveyancingProcess.currentStep} onChange={(event) => setConveyancingProcess({ currentStep: event.target.value as PropertyReport["conveyancingProcess"]["currentStep"] })} disabled={report.terminationNotice.enabled}>
               <option value="offer">收斡旋</option>
               <option value="meeting">見面談</option>
               <option value="contract">簽約</option>
@@ -278,7 +290,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
               <option value="handover">交屋</option>
             </select>
           </Field>
-          <Field label="流程日期"><input type="date" value={report.conveyancingProcess.scheduledDate} onChange={(event) => setConveyancingProcess({ scheduledDate: event.target.value })} /></Field>
+          <Field label="流程日期"><input type="date" value={report.conveyancingProcess.scheduledDate} onChange={(event) => setConveyancingProcess({ scheduledDate: event.target.value })} disabled={report.terminationNotice.enabled} /></Field>
         </div>
       </section>
 

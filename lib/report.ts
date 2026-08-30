@@ -32,6 +32,11 @@ export type ConveyancingProcess = {
   scheduledDate: string;
 };
 
+export type TerminationNotice = {
+  enabled: boolean;
+  terminatedAt: string;
+};
+
 export type PropertyReport = {
   propertyName: string;
   address: string;
@@ -68,6 +73,7 @@ export type PropertyReport = {
   announcements: Announcement[];
   negotiationRecords: NegotiationRecord[];
   conveyancingProcess: ConveyancingProcess;
+  terminationNotice: TerminationNotice;
   updatedAt: string;
 };
 
@@ -119,9 +125,13 @@ export const defaultReport: PropertyReport = {
     createdAt: "2026-08-24T00:00:00.000Z",
   }],
   conveyancingProcess: {
-    enabled: true,
+    enabled: false,
     currentStep: "meeting",
     scheduledDate: "2026-08-29",
+  },
+  terminationNotice: {
+    enabled: true,
+    terminatedAt: "2026-08-31T11:30",
   },
   updatedAt: "2026-08-06T01:30:00.000Z",
 };

@@ -9,6 +9,7 @@ import { TotalViewingDetails, WeeklyViewingDetails } from "./WeeklyViewingDetail
 import { AnnouncementCenter } from "./AnnouncementModal";
 import { NegotiationCenter } from "./NegotiationCenter";
 import { ConveyancingProgress } from "./ConveyancingProgress";
+import { CaseTerminationNotice } from "./CaseTerminationNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -46,11 +47,12 @@ export default async function Home() {
       </header>
 
       <section className="summary-grid" id="overview" aria-label="本期摘要">
-        <ConveyancingProgress process={report.conveyancingProcess} />
+        {!report.terminationNotice.enabled && <ConveyancingProgress process={report.conveyancingProcess} />}
         <article className="metric-card featured">
-          <div className="metric-heading">
+          <div className="metric-heading viewing-card-heading">
             <MetricIcon>人</MetricIcon>
             <div><span>賞屋人數</span><small>本週與累積統計</small></div>
+            <CaseTerminationNotice notice={report.terminationNotice} />
           </div>
           <div className="viewing-split">
             <WeeklyViewingDetails times={report.viewingThisWeekTimes} groups={report.viewingThisWeek} />

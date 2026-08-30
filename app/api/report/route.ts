@@ -99,6 +99,14 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
         createdAt: previous?.createdAt ?? new Date().toISOString(),
       }];
     });
+  const submittedTerminationNotice = value.terminationNotice && typeof value.terminationNotice === "object"
+    ? value.terminationNotice
+    : previousReport.terminationNotice;
+  const submittedTerminationTime = String(submittedTerminationNotice.terminatedAt ?? "").trim();
+  const terminationNotice = {
+    enabled: submittedTerminationNotice.enabled === true,
+    terminatedAt: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(submittedTerminationTime) ? submittedTerminationTime : "",
+  };
   const submittedConveyancingProcess = value.conveyancingProcess && typeof value.conveyancingProcess === "object"
     ? value.conveyancingProcess
     : previousReport.conveyancingProcess;
@@ -111,7 +119,7 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
     : defaultReport.conveyancingProcess.currentStep;
   const submittedConveyancingDate = String(submittedConveyancingProcess.scheduledDate ?? "").trim();
   const conveyancingProcess = {
-    enabled: submittedConveyancingProcess.enabled === true,
+    enabled: !terminationNotice.enabled && submittedConveyancingProcess.enabled === true,
     currentStep: conveyancingStep,
     scheduledDate: /^\d{4}-\d{2}-\d{2}$/.test(submittedConveyancingDate) ? submittedConveyancingDate : "",
   };
@@ -135,6 +143,7 @@ function cleanReport(value: Partial<PropertyReport>, previousReport: PropertyRep
     announcements,
     negotiationRecords,
     conveyancingProcess,
+    terminationNotice,
     updatedAt: new Date().toISOString(),
   };
 }
