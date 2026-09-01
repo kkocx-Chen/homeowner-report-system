@@ -62,17 +62,10 @@ export default async function Home() {
           <ProspectiveBuyers buyers={report.prospectiveBuyers} />
         </article>
 
-        <a
-          className="metric-card dark-card listing-card-link"
-          href="https://591.to/S814S"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="前往 591 查看時上S刊登頁面"
-        >
+        <article className="metric-card dark-card">
           <div className="metric-heading">
             <MetricIcon tone="ink">591</MetricIcon>
             <div><span>591 瀏覽次數</span><small className="listing-rates">平日 800元/天 假日 1800元/天</small></div>
-            <i className="bi bi-arrow-up-right listing-link-icon" aria-hidden="true" />
           </div>
           <div className="metric-value"><strong><RollingNumber value={report.view591Count} duration={1100} /></strong><span>次</span></div>
           <div className="metric-change light">↑ {report.view591Growth}% <span>近七日</span></div>
@@ -81,7 +74,7 @@ export default async function Home() {
             <div><i className="bi bi-phone" aria-hidden="true" /><span>手機</span><strong>{report.view591Mobile}</strong></div>
           </div>
           <div className="sync-row"><span>最後同步</span><time>{report.last591Sync}</time></div>
-        </a>
+        </article>
       </section>
 
       <section className="market-section" id="market">

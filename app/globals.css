@@ -318,16 +318,6 @@ button { cursor: pointer; }
 }
 .dark-card { min-height: 335px; background: linear-gradient(145deg, #253a33, #182b25); color: #f7eadc; border-color: transparent; }
 .dark-card .metric-heading small, .dark-card .metric-value span { color: rgba(255,255,255,.5); }
-.listing-card-link {
-  display: block; cursor: pointer; -webkit-tap-highlight-color: rgba(247,172,136,.18);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-.listing-card-link:active { transform: scale(.985); }
-.listing-card-link:focus-visible { outline: 3px solid #f7ac88; outline-offset: 3px; }
-.listing-link-icon { margin-left: auto; color: rgba(255,255,255,.72); font-size: 17px; }
-@media (hover: hover) {
-  .listing-card-link:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(24,43,37,.2); }
-}
 .device-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 24px; }
 .device-breakdown > div { min-width: 0; padding: 12px 13px; display: grid; grid-template-columns: 22px 1fr; align-items: center; gap: 3px 7px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(255,255,255,.055); }
 .device-breakdown i { grid-row: 1 / 3; color: #f7ac88; font-size: 18px; }
