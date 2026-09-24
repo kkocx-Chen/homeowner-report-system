@@ -42,17 +42,41 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
   const [authenticated, setAuthenticated] = useState(initialAuthenticated);
   const [password, setPassword] = useState("");
   const [report, setReport] = useState<PropertyReport>(defaultReport);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingAnnouncementImage, setUploadingAnnouncementImage] = useState(false);
   const [announcementDraft, setAnnouncementDraft] = useState<AnnouncementDraft>(emptyAnnouncementDraft);
+  const hasDraft = Boolean(announcementDraft.title.trim() || announcementDraft.body.trim() || announcementDraft.imageUrl);
+  const isDirty = savedSnapshot !== null && (JSON.stringify(report) !== savedSnapshot || hasDraft);
+  const cannotSave = saving || loading || uploadingAnnouncementImage || savedSnapshot === null || !isDirty;
 
   useEffect(() => {
-    fetch("/api/report").then((response) => response.json()).then((data) => {
-      if (data.report) setReport(data.report);
-    }).finally(() => setLoading(false));
+    const controller = new AbortController();
+    fetch("/api/report", { signal: controller.signal, cache: "no-store" }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok || !data.report || data.preview) throw new Error("無法取得最新資料");
+      setReport(data.report);
+      setSavedSnapshot(JSON.stringify(data.report));
+    }).catch((error) => {
+      if (error.name !== "AbortError") setLoadError("資料載入失敗，請確認網路後重新載入。");
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false);
+    });
+    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const preventLoss = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", preventLoss);
+    return () => window.removeEventListener("beforeunload", preventLoss);
+  }, [isDirty]);
 
   const setText = (key: keyof PropertyReport, value: string) => setReport((current) => ({ ...current, [key]: value }));
   const setNumber = (key: NumericKey, value: string) => setReport((current) => ({ ...current, [key]: Number(value) }));
@@ -153,15 +177,20 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
   async function login(event: FormEvent) {
     event.preventDefault();
     setMessage("");
-    const response = await fetch("/api/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password }) });
-    const data = await response.json();
-    if (!response.ok) return setMessage(data.error || "登入失敗");
-    setAuthenticated(true);
-    setPassword("");
+    try {
+      const response = await fetch("/api/admin/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password }) });
+      const data = await response.json();
+      if (!response.ok) return setMessage(data.error || "登入失敗");
+      setAuthenticated(true);
+      setPassword("");
+    } catch {
+      setMessage("連線失敗，請確認網路後再登入。");
+    }
   }
 
   async function save(event: FormEvent) {
     event.preventDefault();
+    if (cannotSave) return;
     const hasAnnouncementDraft = Boolean(announcementDraft.title.trim() || announcementDraft.body.trim() || announcementDraft.imageUrl);
     if (hasAnnouncementDraft && !announcementDraft.title.trim()) {
       setMessage("請先填寫公告標題，再儲存發布。");
@@ -182,17 +211,23 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         publishedAt: new Date().toISOString(),
       }, ...report.announcements],
     } : report;
-    const response = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(nextReport) });
-    const data = await response.json();
-    if (response.ok) {
-      setReport(data.report);
-      if (hasAnnouncementDraft) setAnnouncementDraft(emptyAnnouncementDraft);
-      setMessage(hasAnnouncementDraft ? "新公告已發布並加入歷史紀錄。" : "更新完成，屋主頁已顯示最新內容。");
-    } else {
-      setMessage(data.error || "更新失敗，請稍後再試。");
-      if (response.status === 401) setAuthenticated(false);
+    try {
+      const response = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(nextReport) });
+      const data = await response.json();
+      if (response.ok && data.report) {
+        setReport(data.report);
+        setSavedSnapshot(JSON.stringify(data.report));
+        if (hasAnnouncementDraft) setAnnouncementDraft(emptyAnnouncementDraft);
+        setMessage(hasAnnouncementDraft ? "發布完成，新公告已加入歷史紀錄。" : "更新完成，屋主頁已顯示最新內容。");
+      } else {
+        setMessage(data.error || "更新失敗，請稍後再試。");
+        if (response.status === 401) setAuthenticated(false);
+      }
+    } catch {
+      setMessage("未能確認儲存結果，輸入內容仍保留在此頁。請確認網路後再試。");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   async function uploadAnnouncementImage(event: ChangeEvent<HTMLInputElement>) {
@@ -224,8 +259,14 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
 
   async function logout() {
     if (authDisabled) return;
-    await fetch("/api/admin/login", { method: "DELETE" });
-    setAuthenticated(false);
+    if (isDirty && !window.confirm("還有尚未儲存的變更，確定登出？")) return;
+    try {
+      const response = await fetch("/api/admin/login", { method: "DELETE" });
+      if (!response.ok) throw new Error("登出失敗");
+      setAuthenticated(false);
+    } catch {
+      setMessage("登出失敗，請確認網路後再試。");
+    }
   }
 
   if (!authenticated) {
@@ -248,15 +289,21 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
 
   return <main className="admin-shell">
     <header className="admin-topbar">
-      <div><Link href="/" className="brand"><span className="brand-mark" aria-hidden="true">S</span><span>時上S</span></Link><span className="admin-badge">管理後台</span></div>
-      <div><Link href="/" className="preview-button">預覽屋主頁 ↗</Link>{authDisabled ? <span className="admin-badge">免登入調整中</span> : <button type="button" className="logout-button" onClick={logout}>登出</button>}</div>
+      <div><Link href="/" className="brand" onClick={(event) => { if (isDirty && !window.confirm("還有尚未儲存的變更，確定離開？")) event.preventDefault(); }}><span className="brand-mark" aria-hidden="true">S</span><span>時上S</span></Link><span className="admin-badge">管理後台</span></div>
+      <div><Link href="/" className="preview-button" target="_blank" rel="noopener noreferrer">預覽屋主頁 ↗</Link>{authDisabled ? <span className="admin-badge">免登入調整中</span> : <button type="button" className="logout-button" onClick={logout}>登出</button>}</div>
     </header>
 
     <form className="admin-content" onSubmit={save}>
-      <div className="admin-title"><div><p className="eyebrow">REPORT EDITOR</p><h1>更新房屋進度</h1><p>依區塊填寫，儲存後屋主頁會立即更新。</p></div><button className="save-button" type="submit" disabled={saving || loading || uploadingAnnouncementImage}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
+      <div className="admin-title"><div><p className="eyebrow">屋主回報管理</p><h1>更新房屋進度</h1><p>選擇區塊更新，儲存後屋主即可看見。</p></div><button className="save-button" type="submit" disabled={cannotSave}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
+      <nav className="admin-section-nav" aria-label="後台區塊捷徑">
+        {[["basic", "基本資料"], ["status", "案件狀態"], ["viewings", "賞屋／買方"], ["market", "行情"], ["exposure", "591"], ["analysis", "分析"], ["negotiations", "斡旋"], ["announcements", "公告"]].map(([id, label]) => <a key={id} href={`#admin-${id}`}>{label}</a>)}
+      </nav>
+      {loading && <p className="form-message" role="status">正在讀取最新資料…</p>}
+      {loadError && <div className="form-message error" role="alert">{loadError} <button type="button" onClick={() => window.location.reload()}>重新載入</button></div>}
       {message && <div className={`form-message ${message.includes("完成") ? "success" : "error"}`} role="status">{message}</div>}
 
-      <section className="admin-panel">
+      <fieldset className="admin-fields" disabled={saving || loading || savedSnapshot === null}>
+      <section className="admin-panel" id="admin-basic">
         <div className="panel-heading"><span>01</span><div><h2>物件基本資料</h2><p>屋主頁最上方顯示的名稱與本期狀態</p></div></div>
         <div className="form-grid">
           <Field label="物件名稱"><input value={report.propertyName} onChange={(e) => setText("propertyName", e.target.value)} /></Field>
@@ -267,7 +314,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-status">
         <div className="panel-heading"><span>02</span><div><h2>案件狀態與代書流程</h2><p>顯示解約資訊，或更新簽約與過戶進度</p></div></div>
         <div className="form-grid">
           <button type="button" className={`announcement-toggle wide ${report.terminationNotice.enabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.terminationNotice.enabled} onClick={() => setTerminationNotice({ enabled: !report.terminationNotice.enabled })}>
@@ -294,7 +341,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-viewings">
         <div className="panel-heading"><span>03</span><div><h2>賞屋人數</h2><p>更新本週與累積賞屋熱度</p></div></div>
         <div className="form-grid three">
           <Field label="本週賞屋組數"><input type="number" min="0" max="50" value={report.viewingThisWeek} onChange={(e) => setViewingThisWeek(e.target.value)} /></Field>
@@ -388,7 +435,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-market">
         <div className="panel-heading"><span>04</span><div><h2>周遭行情</h2><p>用總價、單價與近期成交呈現市場位置</p></div></div>
         <div className="form-grid three">
           <Field label="區域低標（萬）"><input type="number" value={report.marketLow} onChange={(e) => setNumber("marketLow", e.target.value)} /></Field>
@@ -402,7 +449,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-exposure">
         <div className="panel-heading"><span>05</span><div><h2>591 瀏覽次數</h2><p>無需爬蟲，依 591 後台數據手動同步</p></div></div>
         <div className="form-grid three">
           <Field label="電腦瀏覽次數"><input type="number" value={report.view591Desktop} onChange={(e) => set591Device("view591Desktop", e.target.value)} /></Field>
@@ -413,7 +460,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-analysis">
         <div className="panel-heading"><span>06</span><div><h2>專員個人分析</h2><p>用白話整理市場回饋與下一步建議</p></div></div>
         <div className="form-grid">
           <Field label="分析重點" wide><input value={report.analysisHeadline} onChange={(e) => setText("analysisHeadline", e.target.value)} /></Field>
@@ -425,7 +472,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-negotiations">
         <div className="panel-heading"><span>07</span><div><h2>斡旋紀錄</h2><p>管理屋主頁右上角顯示的收斡旋紀錄</p></div></div>
         <div className="negotiation-admin-editor">
           <div className="buyer-admin-heading">
@@ -464,7 +511,7 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <section className="admin-panel">
+      <section className="admin-panel" id="admin-announcements">
         <div className="panel-heading"><span>08</span><div><h2>公告中心</h2><p>發布新公告並保留過往公告紀錄</p></div></div>
         <div className="form-grid">
           <button type="button" className={`announcement-toggle wide ${report.announcementEnabled ? "is-enabled" : ""}`} role="switch" aria-checked={report.announcementEnabled} onClick={() => setReport((current) => ({ ...current, announcementEnabled: !current.announcementEnabled }))}>
@@ -526,7 +573,8 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
         </div>
       </section>
 
-      <div className="sticky-save"><span>{message || "變更尚未儲存"}</span><button className="save-button" type="submit" disabled={saving || uploadingAnnouncementImage}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
+      </fieldset>
+      <div className="sticky-save"><span role="status">{saving ? "正在儲存…" : loading ? "讀取中…" : loadError ? "尚未載入資料" : isDirty ? "有尚未儲存的變更" : "所有變更已儲存"}</span><button className="save-button" type="submit" disabled={cannotSave}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
     </form>
   </main>;
 }

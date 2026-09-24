@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Announcement } from "../lib/report";
+import { useDialogFocus } from "./useDialogFocus";
 
 const NEW_ANNOUNCEMENT_DURATION = 24 * 60 * 60 * 1000;
 
@@ -48,23 +49,7 @@ export function AnnouncementCenter({ enabled, announcements }: { enabled: boolea
     };
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [open]);
+  useDialogFocus(open, closeButtonRef, () => setOpen(false));
 
   if (!enabled || visibleAnnouncements.length === 0) return null;
 

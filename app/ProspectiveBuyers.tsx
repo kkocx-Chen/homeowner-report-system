@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ProspectiveBuyer } from "../lib/report";
+import { useDialogFocus } from "./useDialogFocus";
 
 export function ProspectiveBuyers({ buyers }: { buyers: ProspectiveBuyer[] }) {
   const [open, setOpen] = useState(false);
@@ -12,26 +13,7 @@ export function ProspectiveBuyers({ buyers }: { buyers: ProspectiveBuyer[] }) {
   const trackingCount = buyers.filter((buyer) => buyer.status === "tracking").length;
   const activeBuyer = activeBuyerIndex === null ? null : buyers[activeBuyerIndex];
 
-  useEffect(() => {
-    if (activeBuyerIndex === null) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      const buyerIndex = activeBuyerIndex;
-      setActiveBuyerIndex(null);
-      window.requestAnimationFrame(() => buyerButtonRefs.current[buyerIndex]?.focus());
-    };
-
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [activeBuyerIndex]);
+  useDialogFocus(activeBuyerIndex !== null, closeButtonRef, () => setActiveBuyerIndex(null));
 
   const closeBuyerCard = () => {
     const buyerIndex = activeBuyerIndex;
@@ -84,7 +66,7 @@ export function ProspectiveBuyers({ buyers }: { buyers: ProspectiveBuyer[] }) {
           <span className="prospect-trigger-icon" aria-hidden="true"><i className="bi bi-person-check-fill" /></span>
           <span className="prospect-trigger-copy">
             <strong>有望買方</strong>
-            <small>{buyers.length > 0 ? `${buyers.length} 組買方進度` : "目前尚未新增"}</small>
+            <small>{buyers.length > 0 ? `${buyers.length} 組買方進度 · 點選查看` : "有新進度時，會在這裡更新"}</small>
           </span>
           {trackingCount > 0 && <span className="prospect-tracking-count">{trackingCount} 組追蹤中</span>}
           <i className="bi bi-chevron-down prospect-chevron" aria-hidden="true" />
@@ -94,6 +76,7 @@ export function ProspectiveBuyers({ buyers }: { buyers: ProspectiveBuyer[] }) {
           id="prospective-buyers-panel"
           className={`prospect-panel ${open ? "is-open" : ""}`}
           aria-hidden={!open}
+          inert={!open}
         >
           <div className="prospect-panel-inner">
             <div className="prospect-list" role="region" aria-label="有望買方名單">

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { RollingNumber } from "./RollingNumber";
+import { useDialogFocus } from "./useDialogFocus";
 
 function formatViewingTime(value: string) {
   const dateTime = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value);
@@ -35,25 +36,7 @@ function ViewingDetails({ times, groups, label, kicker, title, emptyMessage, mod
     : Array.from({ length: groupCount }, (_, index) => times?.[index] ?? "");
   const modalCount = tone === "total" ? viewingTimes.length : groupCount;
 
-  useEffect(() => {
-    if (!open) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setOpen(false);
-      window.requestAnimationFrame(() => triggerRef.current?.focus());
-    };
-
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
+  useDialogFocus(open, closeButtonRef, () => setOpen(false));
 
   const closeDetails = () => {
     setOpen(false);
@@ -94,6 +77,7 @@ function ViewingDetails({ times, groups, label, kicker, title, emptyMessage, mod
       <button ref={triggerRef} type="button" className={`viewing-stat viewing-stat-button ${tone === "total" ? "total-viewing-stat-button" : ""}`} onClick={() => setOpen(true)} aria-haspopup="dialog">
         <span>{label}</span>
         <div><strong><RollingNumber value={groups} /></strong><small>組</small></div>
+        <small className="viewing-stat-hint">{modalCount > 0 ? "查看帶看時間" : "尚無帶看紀錄"}</small>
         <i className="bi bi-chevron-right viewing-stat-chevron" aria-hidden="true" />
       </button>
       {modal}

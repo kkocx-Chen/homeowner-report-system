@@ -1,0 +1,155 @@
+/* Mobile report: readable type, compact content-led cards, generous touch targets. */
+:root { --paper: #f5f7f5; --ink-soft: #53665e; --shadow: 0 4px 20px rgba(31, 53, 43, .035); }
+.site-shell { background: var(--paper); overflow: clip; }
+.site-shell .topbar { min-height: calc(72px + env(safe-area-inset-top)); padding-right: 18px; padding-left: 18px; gap: 12px; }
+.site-shell .mini-title strong { font-size: 23px; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.site-shell .mini-title span { display: block; font-size: 12px; letter-spacing: .02em; }
+.site-shell .topbar-actions { gap: 8px; flex-shrink: 0; }
+.site-shell .announcement-pill, .site-shell .negotiation-pill { min-height: 44px; padding: 0 12px; font-size: 13px; }
+.site-shell .negotiation-count { min-width: 21px; height: 21px; font-size: 11px; }
+.site-shell .announcement-unread { font-size: 11px; }
+.report-freshness { margin: 16px 18px 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; color: #65766d; font-size: 12px; }
+.report-freshness > span:first-child { display: flex; gap: 6px; }
+.report-freshness .live-pill { min-height: 28px; padding: 0; border: 0; background: none; font-size: 12px; color: #65766d; }
+.report-freshness .live-pill i { width: 5px; height: 5px; box-shadow: none; }
+.site-shell .summary-grid { margin-top: 14px; margin-bottom: 30px; gap: 16px; scroll-margin-top: 96px; }
+.site-shell .metric-card { min-height: 0; padding: 22px; border-radius: 22px; }
+.site-shell .metric-card.featured { min-height: 0; }
+.site-shell .metric-heading { gap: 12px; }
+.site-shell .metric-heading > div { min-width: 0; }
+.site-shell .metric-heading .listing-rates { white-space: normal; }
+.listing-card-link { display: block; -webkit-tap-highlight-color: rgba(247,172,136,.18); transition: box-shadow .18s ease; }
+.listing-card-link:focus-visible { outline: 3px solid #bd885c; outline-offset: 3px; }
+.listing-link-icon { flex: 0 0 auto; margin-left: auto; color: #e1c7ae; font-size: 18px; }
+@media (hover: hover) { .listing-card-link:hover { box-shadow: 0 8px 24px rgba(24,43,37,.18); } }
+.metric-heading h2 { margin: 0; font-size: 20px; font-weight: 740; line-height: 1.4; letter-spacing: -.025em; }
+.site-shell .metric-heading small { font-size: 12px; line-height: 1.6; color: #66786e; }
+.site-shell .metric-icon { width: 44px; height: 44px; border-radius: 14px; background: #eaf0e9; color: #496651; font-size: 18px; }
+.site-shell .dark-card .metric-icon { background: rgba(255,255,255,.1); color: #f7eadc; font-size: 16px; }
+.site-shell .viewing-card-heading { flex-wrap: wrap; align-items: center; }
+.site-shell .viewing-card-heading > div { flex: 1 1 130px; }
+.site-shell .case-termination-notice { flex-basis: 100%; max-width: none; text-align: left; font-size: 12px; }
+.case-termination-notice span, .case-termination-notice strong { display: inline; margin-right: 4px; }
+.site-shell .viewing-split { margin-top: 22px; margin-bottom: 16px; gap: 12px; }
+.site-shell .viewing-stat { padding: 16px 13px; border-radius: 16px; background: #f4f6f1; border-color: #e4eadd; }
+.site-shell .viewing-stat:last-child { background: #eef4ef; border-color: #dee9df; }
+.site-shell .viewing-stat > span { font-size: 13px; color: #506459; margin-bottom: 12px; }
+.site-shell .viewing-stat strong { font-size: 42px; font-weight: 720; }
+.site-shell .viewing-stat-hint { display: block; margin-top: 14px; font-size: 12px; color: #61746a; }
+.site-shell .viewing-stat-chevron { top: auto; bottom: 18px; right: 12px; font-size: 10px; color: #66806e; }
+.site-shell .metric-change { gap: 6px; font-size: 13px; flex-wrap: wrap; }
+.site-shell .metric-change span { color: #6c7a73; font-size: 12px; }
+.site-shell .metric-change.is-neutral { color: #65776d; }
+.site-shell .metric-change.is-positive { color: #4d765c; }
+.site-shell .metric-change.is-negative { color: #a15944; }
+.site-shell .metric-change.light { color: #edd2ba; }
+.site-shell .metric-change.light span, .site-shell .dark-card .metric-heading small { color: #b9c8c0; }
+.site-shell .metric-value { margin-top: 22px; }
+.site-shell .metric-value strong { font-size: clamp(46px, 13vw, 60px); letter-spacing: -.045em; }
+.site-shell .metric-value .rolling-number-value, .site-shell .rolling-number-value { font: inherit; color: inherit; letter-spacing: inherit; }
+.site-shell .prospect-accordion { margin-top: 20px; padding-top: 14px; }
+.site-shell .prospect-trigger-copy strong { font-size: 15px; }
+.site-shell .prospect-trigger-copy small { font-size: 12px; color: #6b7d73; line-height: 1.6; }
+.site-shell .prospect-tracking-count { font-size: 12px; }
+.site-shell .prospect-title { font-size: 14px; }
+.site-shell .prospect-status { font-size: 12px; }
+.site-shell .prospect-empty, .content-empty { margin: 0; padding: 18px 12px; color: #687b6e; font-size: 14px; line-height: 1.7; background: #f4f7f3; border-radius: 12px; }
+.site-shell .device-breakdown { margin-top: 22px; }
+.site-shell .device-breakdown > div { padding: 15px 12px; }
+.site-shell .device-breakdown span { font-size: 12px; color: #b9c8c0; }
+.site-shell .device-breakdown strong { font-size: 22px; }
+.site-shell .sync-row { font-size: 12px; flex-wrap: wrap; gap: 8px; }
+.site-shell .market-section { padding: 0 0 20px; background: transparent; scroll-margin-top: 96px; }
+.site-shell .section-heading { width: calc(100% - 40px); margin-bottom: 18px; gap: 12px; }
+.site-shell .eyebrow { margin: 0 0 6px; font-size: 12px; letter-spacing: .08em; color: #5e7866; }
+.site-shell .section-heading h2, .site-shell .analysis-copy h2 { font-size: 25px; line-height: 1.4; letter-spacing: -.025em; }
+.site-shell .section-heading > p { font-size: 14px; line-height: 1.8; color: #586e61; white-space: pre-line; overflow-wrap: anywhere; }
+.site-shell .market-grid { width: calc(100% - 24px); gap: 16px; }
+.site-shell .price-card, .site-shell .comparable-card { padding: 22px; border-radius: 22px; }
+.site-shell .listing-price { margin: 20px 0 28px; }
+.site-shell .listing-price strong { font-size: 44px; }
+.site-shell .scale-labels { font-size: 12px; }
+.site-shell .price-facts { margin-top: 26px; padding-top: 20px; gap: 12px; }
+.site-shell .price-facts span, .site-shell .price-facts small { font-size: 13px; }
+.site-shell .table-title { gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.site-shell .table-title h3 { font-size: 17px; }
+.site-shell .table-title span { font-size: 12px; }
+.site-shell .comparable-row { gap: 8px; grid-template-columns: 24px minmax(0, 1fr) minmax(65px, auto); }
+.site-shell .case-main, .site-shell .case-price { min-width: 0; overflow-wrap: anywhere; }
+.site-shell .case-main span, .site-shell .case-price span { font-size: 12px; line-height: 1.6; }
+.site-shell .analysis-section { margin-top: 0; padding: 22px; gap: 22px; border-radius: 22px; scroll-margin-top: 96px; }
+.site-shell .portrait-placeholder { width: 48px; height: 48px; font-size: 21px; }
+.site-shell .analysis-label { gap: 12px; }
+.site-shell .analysis-label small { font-size: 13px; }
+.site-shell .analysis-copy blockquote { margin: 18px 0; padding-left: 14px; border-left: 3px solid #a8bba3; font-family: inherit; font-size: 19px; font-weight: 650; line-height: 1.7; white-space: pre-line; overflow-wrap: anywhere; }
+.site-shell .analysis-copy > p:not(.eyebrow) { font-size: 16px; line-height: 1.9; overflow-wrap: anywhere; }
+.site-shell .recommendation { margin-top: 24px; padding: 18px; border: 0; background: #f2f5ef; border-radius: 14px; }
+.site-shell .recommendation span { font-size: 13px; color: #55745c; }
+.site-shell .recommendation p { font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; }
+.site-shell footer > .footer-note, .site-shell footer > .footer-thanks { font-size: 12px; color: #738279; }
+.site-shell .mini-tabbar a { min-height: 52px; font-size: 12px; border-radius: 12px; color: #65766b; font-weight: 500; }
+.site-shell .mini-tabbar a[aria-current="location"] { background: #eaf1e7; color: #31543c; font-weight: 750; }
+.site-shell .mini-tabbar a:focus-visible, .admin-section-nav a:focus-visible { outline: 2px solid #557a5e; outline-offset: -2px; }
+.skip-link { position: fixed; top: 8px; left: 16px; z-index: 2000; padding: 12px; border-radius: 8px; background: #20332d; color: white; transform: translateY(-160%); }
+.skip-link:focus { transform: translateY(0); }
+
+/* Readable modal content and reachable dismissal controls. */
+.buyer-modal-card, .announcement-modal-card { overscroll-behavior: contain; scrollbar-width: thin; }
+.buyer-modal-close, .announcement-modal-close { width: 44px; height: 44px; }
+.buyer-modal-detail span, .buyer-modal-kicker, .viewing-modal-count, .viewing-time-empty { font-size: 13px; }
+.buyer-modal-detail strong { font-size: 16px; white-space: pre-line; }
+.viewing-time-row { min-height: 64px; }
+.viewing-time-row > div { flex-wrap: wrap; gap: 4px 10px; }
+.viewing-time-row small { font-size: 12px; }
+.viewing-time-row strong { font-size: 14px; }
+.announcement-history-meta time, .announcement-center-heading > div > span, .negotiation-modal-heading > div > span, .negotiation-record-heading time { font-size: 12px; }
+.announcement-history-summary strong { font-size: 16px; }
+.announcement-history-content p, .negotiation-note p { font-size: 15px; line-height: 1.8; }
+.negotiation-amounts span, .negotiation-note > span, .negotiation-status { font-size: 12px; }
+
+/* Admin: navigation and save feedback stay visible on small screens. */
+.admin-shell { background: #f4f6f3; }
+.admin-content { padding-top: 32px; padding-bottom: 150px; }
+.admin-fields { min-width: 0; padding: 0; margin: 0; border: 0; }
+.admin-section-nav { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; margin: 0 0 20px; border: 1px solid #e0e7dd; border-radius: 14px; background: rgba(247,250,245,.98); }
+.admin-section-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 9px; font-size: 14px; color: #45604c; background: white; }
+.admin-panel { border-radius: 18px; scroll-margin-top: 135px; }
+.admin-title > div > p:last-child { font-size: 15px; line-height: 1.7; }
+.admin-title h1 { font-size: 32px; }
+.panel-heading h2 { font-size: 19px; }
+.panel-heading p, .admin-field small { font-size: 13px; line-height: 1.6; color: #65766c; }
+.admin-field > span { font-size: 14px; }
+.admin-field input, .admin-field select, .admin-field textarea { font-size: 16px; border-radius: 8px; }
+.admin-field input, .admin-field select { min-height: 46px; }
+.announcement-toggle-copy strong { font-size: 15px; }
+.announcement-toggle-copy small { font-size: 13px; }
+.save-button { min-height: 46px; border-radius: 10px; font-size: 14px; background: #3e6249; box-shadow: none; }
+.save-button:disabled { cursor: not-allowed; }
+.form-message { font-size: 14px; line-height: 1.65; border-radius: 10px; }
+.form-message button { min-height: 44px; margin-left: 8px; padding: 4px 12px; border: 1px solid currentColor; border-radius: 8px; background: transparent; }
+.sticky-save { gap: 12px; border-radius: 16px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+.sticky-save > span { display: block; font-size: 13px; color: #e0ebe2; }
+.sticky-save .save-button { width: auto; flex-shrink: 0; }
+.buyer-admin-heading strong, .weekly-viewing-admin-heading strong, .negotiation-admin-row-heading strong { font-size: 15px; }
+.buyer-admin-heading span, .weekly-viewing-admin-heading span { font-size: 12px; }
+.buyer-add-button, .viewing-time-add-button { min-height: 44px; font-size: 14px; border-radius: 8px; }
+.buyer-order-button, .buyer-remove-button, .viewing-time-remove-button { min-height: 44px; }
+.login-card { border-radius: 22px; }
+.login-card input { font-size: 16px; border-radius: 8px; }
+.login-card > p:not(.eyebrow), .login-card form label span, .back-link { font-size: 14px; }
+.login-card form button { border-radius: 8px; }
+@media (max-width: 620px) {
+  .admin-section-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; margin-bottom: 16px; }
+  .admin-section-nav a { flex-shrink: 0; }
+  .admin-panel { scroll-margin-top: 80px; padding: 24px 18px; }
+  .sticky-save { flex-wrap: wrap; justify-content: center; padding: 12px; }
+  .sticky-save > span { width: 100%; text-align: center; }
+  .sticky-save .save-button { width: 100%; }
+}
+@media (max-width: 370px) {
+  .site-shell .topbar { padding-right: 12px; padding-left: 12px; gap: 8px; }
+  .site-shell .announcement-pill, .site-shell .negotiation-pill { padding: 0 9px; }
+  .site-shell .metric-card, .site-shell .price-card, .site-shell .comparable-card, .site-shell .analysis-section { padding: 18px; }
+  .site-shell .viewing-stat > span { font-size: 12px; }
+  .site-shell .viewing-stat-hint { font-size: 11px; }
+}

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { NegotiationRecord } from "../lib/report";
+import { useDialogFocus } from "./useDialogFocus";
 
 const statusLabels: Record<NegotiationRecord["status"], string> = {
   negotiating: "協商中",
@@ -62,23 +63,7 @@ export function NegotiationCenter({ records }: { records: NegotiationRecord[] })
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      window.cancelAnimationFrame(focusFrame);
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [open]);
+  useDialogFocus(open, closeButtonRef, () => setOpen(false));
 
   if (records.length === 0) return null;
 

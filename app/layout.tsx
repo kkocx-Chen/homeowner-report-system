@@ -1,7 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
+import "./usability.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f5f7f5",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();

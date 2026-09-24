@@ -25,5 +25,5 @@ export function RollingNumber({ value, duration = 900 }: { value: number; durati
     return () => cancelAnimationFrame(frame);
   }, [duration, target]);
 
-  return <>{displayed}</>;
+  return <><span className="rolling-number-value" aria-hidden="true">{displayed}</span><span className="sr-only">{target}</span></>;
 }
