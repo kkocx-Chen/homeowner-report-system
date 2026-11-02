@@ -374,7 +374,7 @@ footer a { padding-bottom: 3px; border-bottom: 1px solid #829087; }
 .mini-tabbar {
   position: fixed; z-index: 40; left: 50%; bottom: 0; width: min(480px, 100%);
   min-height: calc(58px + env(safe-area-inset-bottom)); padding: 6px 10px env(safe-area-inset-bottom);
-  display: grid; grid-template-columns: repeat(4, 1fr); transform: translateX(-50%);
+  display: grid; grid-template-columns: repeat(3, 1fr); transform: translateX(-50%);
   border-top: 1px solid rgba(32,51,45,.1); background: rgba(255,255,255,.94);
   backdrop-filter: saturate(160%) blur(18px); -webkit-backdrop-filter: saturate(160%) blur(18px);
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getReport } from "../lib/report-store";
-import { defaultReport, parseComparableCases } from "../lib/report";
+import { defaultReport } from "../lib/report";
 import { RefreshTime } from "./RefreshTime";
 import { RollingNumber } from "./RollingNumber";
 import { ProspectiveBuyers } from "./ProspectiveBuyers";
@@ -17,10 +17,8 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "房屋銷售進度報告",
-  description: "即時掌握賞屋、市場行情與曝光成效。",
+  description: "即時掌握賞屋、曝光成效與專員分析。",
 };
-
-const number = new Intl.NumberFormat("zh-TW");
 
 function MetricIcon({ children, tone = "clay" }: { children: React.ReactNode; tone?: "clay" | "ink" }) {
   return <span className={`metric-icon ${tone}`} aria-hidden="true">{children}</span>;
@@ -33,10 +31,6 @@ export default async function Home() {
   } catch {
     // The polished sample remains visible while a local database is starting.
   }
-  const comparables = parseComparableCases(report.comparableCases);
-  const pricePosition = report.marketHigh > report.marketLow
-    ? Math.min(92, Math.max(8, ((report.listingPrice - report.marketLow) / (report.marketHigh - report.marketLow)) * 100))
-    : 50;
   const updatedDate = new Date(report.updatedAt);
   const updatedLabel = Number.isNaN(updatedDate.getTime()) ? "待更新" : new Intl.DateTimeFormat("zh-TW", {
     timeZone: "Asia/Taipei", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -95,45 +89,6 @@ export default async function Home() {
           </div>
           <div className="sync-row"><span>最後同步</span><time>{report.last591Sync}</time></div>
         </a>
-      </section>
-
-      <section className="market-section" id="market">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">價格與成交參考</p>
-            <h2>周遭行情</h2>
-          </div>
-          <p>{report.marketSummary}</p>
-        </div>
-
-        <div className="market-grid">
-          <article className="price-card">
-            <div className="price-topline"><span>目前開價</span></div>
-            <div className="listing-price"><strong>{number.format(report.listingPrice)}</strong><span>萬元</span></div>
-            <div className="price-scale">
-              <div className="scale-track"><i style={{ left: `${pricePosition}%` }} /></div>
-              <div className="scale-labels"><span>{report.marketLow} 萬</span><span>區域中位 {report.marketMedian} 萬</span><span>{report.marketHigh} 萬</span></div>
-            </div>
-            <div className="price-facts">
-              <div><span>物件單價</span><strong>{report.averagePingPrice}<small> 萬／坪</small></strong></div>
-              <div><span>上週成交</span><strong>{report.recentTransactions}<small> 筆</small></strong></div>
-            </div>
-          </article>
-
-          <article className="comparable-card">
-            <div className="table-title"><h3>近期相似成交</h3><span>實價登錄參考</span></div>
-            <div className="comparable-list">
-              {comparables.length === 0 && <p className="content-empty">目前尚無相似成交紀錄，更新後會顯示在這裡。</p>}
-              {comparables.map((item, index) => (
-                <div className="comparable-row" key={`${item.name}-${index}`}>
-                  <div className="case-dot">{index + 1}</div>
-                  <div className="case-main"><strong>{item.name}</strong><span>{item.detail}</span></div>
-                  <div className="case-price"><strong>{item.price}</strong><span>{item.unit}</span></div>
-                </div>
-              ))}
-            </div>
-          </article>
-        </div>
       </section>
 
       <section className="analysis-section" id="analysis">

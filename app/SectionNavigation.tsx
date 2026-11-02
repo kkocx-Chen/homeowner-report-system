@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 const sections = [
   { id: "overview", label: "概況", icon: "bi-grid-1x2-fill" },
-  { id: "market", label: "行情", icon: "bi-graph-up-arrow" },
   { id: "analysis", label: "分析", icon: "bi-clipboard-data" },
 ];
 
