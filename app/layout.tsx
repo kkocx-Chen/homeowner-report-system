@@ -3,12 +3,13 @@ import { headers } from "next/headers";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
 import "./usability.css";
+import "./report-theme.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#f5f7f5",
+  themeColor: "#101623",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -25,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
       default: "時上S｜房屋銷售回報",
       template: "%s｜時上S",
     },
-    description: "讓屋主清楚掌握賞屋人數、周遭行情、591 曝光與專員建議。",
+    description: "讓屋主清楚掌握賞屋人數、591 曝光與專員建議。",
     icons: { icon: "/safe-fill.svg", shortcut: "/safe-fill.svg" },
     openGraph: {
       title: "時上S｜房屋銷售進度報告",

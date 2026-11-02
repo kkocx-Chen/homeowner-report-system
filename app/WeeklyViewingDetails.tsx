@@ -74,7 +74,7 @@ function ViewingDetails({ times, groups, label, kicker, title, emptyMessage, mod
 
   return (
     <>
-      <button ref={triggerRef} type="button" className={`viewing-stat viewing-stat-button ${tone === "total" ? "total-viewing-stat-button" : ""}`} onClick={() => setOpen(true)} aria-haspopup="dialog">
+      <button ref={triggerRef} type="button" className={`viewing-stat viewing-stat-button ${tone === "total" ? "total-viewing-stat-button" : "weekly-viewing-stat-button"}`} onClick={() => setOpen(true)} aria-haspopup="dialog">
         <span>{label}</span>
         <div><strong><RollingNumber value={groups} /></strong><small>組</small></div>
         <small className="viewing-stat-hint">{modalCount > 0 ? "查看帶看時間" : "尚無帶看紀錄"}</small>
