@@ -1,117 +1,81 @@
-/* Owner-facing theme only: vivid statistics, quiet reading surfaces. */
-body:has(.site-shell) { background: #090f1b; }
+/* Quiet, white owner report. Accents distinguish data without competing with it. */
+body:has(.site-shell) { background: #fff; }
 .site-shell {
-  --ink: #f3f5fb;
-  --ink-soft: #acb8cc;
-  --line: #303b50;
-  --card: #1a2435;
-  --gold: #ffd18a;
-  --aqua: #82eedb;
+  --ink: #293430;
+  --ink-soft: #65716b;
+  --line: #e9e7e3;
+  --card: #fff;
   color: var(--ink);
-  background: radial-gradient(ellipse 420px 370px at 0 0, #28334b 0%, transparent 80%), #101623;
-  box-shadow: 0 0 80px #0005;
+  background: #fff;
+  box-shadow: none;
 }
-.site-shell .topbar { background: #101623ed; border-bottom-color: #2c374c; }
-.site-shell .mini-title strong { color: #ffe3af; letter-spacing: -.02em; }
-.site-shell .mini-title span { color: #aab7cd; }
-.site-shell .announcement-pill, .site-shell .negotiation-pill { background: #202d42; border-color: #3b4961; color: #f5e0bc; }
-.site-shell .negotiation-pill { color: #94efdf; }
-.site-shell .negotiation-count, .site-shell .announcement-unread { background: #ffbf75; color: #34210e; border-color: #101623; box-shadow: 0 2px 12px #ffb65b30; }
-.site-shell .report-freshness, .site-shell .report-freshness .live-pill { color: #aab7cd; }
-.site-shell .live-pill i { background: #82eedb; box-shadow: 0 0 8px #82eedb50; }
+.site-shell .topbar { background: #fffffff5; border-bottom-color: #eeece8; }
+.site-shell .mini-title strong { color: #303c36; font-weight: 680; letter-spacing: -.02em; }
+.site-shell .mini-title span { color: #717b75; }
+.site-shell .announcement-pill, .site-shell .negotiation-pill { background: #faf9f7; border-color: #e6e2db; color: #5e665f; }
+.site-shell .negotiation-count, .site-shell .announcement-unread { background: #8b7150; color: #fff; border-color: #fff; box-shadow: none; }
 .site-shell .metric-card, .site-shell .metric-card.featured, .site-shell .analysis-section {
-  background: linear-gradient(145deg, #202c40, #172131);
-  border-color: #354158;
-  box-shadow: inset 0 1px 0 #ffffff06, 0 12px 28px #0002;
+  background: #fff;
+  border: 1px solid #e8e5df;
+  border-radius: 18px;
+  box-shadow: 0 3px 14px #302b2004;
 }
-.site-shell .metric-card.featured { border-top: 2px solid #e8b56e; }
-.site-shell .metric-heading h2 { color: #f7f4ec; }
-.site-shell .metric-heading small { color: #b3bed1; }
-.site-shell .metric-icon { background: #3f3540; color: var(--gold); }
+.site-shell .metric-heading h2 { font-weight: 650; color: #303c36; }
+.site-shell .metric-heading small { color: #6e7872; }
+.site-shell .metric-icon { background: #f4f3ef; color: #7b725f; border-radius: 12px; }
 
-/* Explicit semantic classes keep colors stable if the card order changes. */
+/* Color belongs to the statistic, not its position in the layout. */
 .site-shell .viewing-stat-button.weekly-viewing-stat-button,
 .site-shell .viewing-stat-button.total-viewing-stat-button {
-  --stat-ink: #45270e;
-  --stat-muted: #65411e;
-  --stat-edge: #ffe2ae;
-  --stat-surface: linear-gradient(135deg, #ffdfa8, #ffb963);
-  background: var(--stat-surface);
-  border-color: var(--stat-edge);
-  color: var(--stat-ink);
-  box-shadow: inset 0 1px 0 #ffffff70, 0 6px 18px #f2ad4d14;
-  transition: transform .18s ease, box-shadow .18s ease;
+  --stat-ink: #795a38;
+  --stat-muted: #74654f;
+  --stat-focus: #8c6c44;
+  background: #f7f2ea;
+  border-color: #eee5d8;
+  border-radius: 12px;
+  box-shadow: none;
 }
 .site-shell .viewing-stat-button.total-viewing-stat-button {
-  --stat-ink: #083e3b;
-  --stat-muted: #1e5753;
-  --stat-edge: #b8fff0;
-  --stat-surface: linear-gradient(135deg, #b6f7e8, #62deca);
-  background: var(--stat-surface);
-  border-color: var(--stat-edge);
-  box-shadow: inset 0 1px 0 #ffffff70, 0 6px 18px #62deca14;
+  --stat-ink: #365d76;
+  --stat-muted: #5a6d79;
+  --stat-focus: #486e87;
+  background: #f0f4f7;
+  border-color: #e1e9ef;
 }
-.site-shell .viewing-stat-button > span, .site-shell .viewing-stat-button strong { color: var(--stat-ink); }
-.site-shell .viewing-stat-button > span { font-weight: 700; }
-.site-shell .viewing-stat-button strong { font-size: 48px; font-weight: 800; }
+.site-shell .viewing-stat-button > span { color: var(--stat-muted); font-weight: 550; }
+.site-shell .viewing-stat-button strong { color: var(--stat-ink); font-size: 46px; font-weight: 650; letter-spacing: -.04em; }
 .site-shell .viewing-stat-button small, .site-shell .viewing-stat-button .viewing-stat-chevron { color: var(--stat-muted); }
-.site-shell .viewing-stat-button:focus-visible { outline: 3px solid var(--stat-edge); outline-offset: 4px; }
-.site-shell .metric-change.is-neutral, .site-shell .metric-change span { color: #afbdd0; }
-.site-shell .metric-change.is-positive { color: #8be4ba; }
-.site-shell .metric-change.is-negative { color: #ffb0a4; }
-.site-shell .prospect-trigger { color: #f3f5fb; }
-.site-shell .prospect-trigger-icon { background: #253f44; color: #89e3cf; }
-.site-shell .prospect-trigger-copy small, .site-shell .prospect-chevron, .site-shell .prospect-item-chevron { color: #b0bdd0; }
-.site-shell .prospect-tracking-count, .site-shell .prospect-item .prospect-status.tracking { color: #8be4ba; }
-.site-shell .prospect-item .prospect-status.invalid { color: #ffb0a4; }
-.site-shell .prospect-item-card { background: #202d42; border-color: #3b4961; }
-.site-shell .prospect-empty { background: #202d42; color: #b8c5d8; }
-.site-shell .metric-card.dark-card { background: radial-gradient(ellipse at 100% 0, #254b53, transparent 70%), #152d36; border-color: #3d666b; }
-.site-shell .dark-card .metric-icon { background: #324e50; color: #f9d89a; }
-.site-shell .dark-card .metric-value strong { color: #9af1df; text-shadow: 0 2px 22px #71ddc724; }
-.site-shell .dark-card .metric-value > span, .site-shell .dark-card .metric-heading small, .site-shell .device-breakdown span, .site-shell .sync-row { color: #b8cdd1; }
-.site-shell .dark-card .metric-change.is-positive { color: #8be4ba; }
-.site-shell .dark-card .metric-change.is-negative { color: #ffb0a4; }
-.site-shell .dark-card .metric-change.is-neutral, .site-shell .dark-card .metric-change span { color: #b8cdd1; }
-.site-shell .device-breakdown > div { background: #ffffff08; border-color: #4a666b; }
-.site-shell .device-breakdown i, .site-shell .listing-link-icon { color: #f9d89a; }
-.site-shell .device-breakdown strong, .site-shell .sync-row time { color: #f1fcf9; }
-.site-shell .listing-card-link { transition: border-color .2s ease, box-shadow .2s ease; }
-.site-shell .listing-card-link:focus-visible { outline-color: var(--aqua); }
-.site-shell .analysis-label strong, .site-shell .analysis-copy h2 { color: #f3f5fb; }
-.site-shell .analysis-label small { color: #b0bdd0; }
-.site-shell .portrait-placeholder { background: linear-gradient(135deg, #ffdfa8, #ffb963); color: #45270e; border: 1px solid #ffe2ae; }
-.site-shell .eyebrow { color: #f4c786; }
-.site-shell .analysis-copy blockquote { color: #f5dfbc; border-color: #e6b16d; }
-.site-shell .analysis-copy > p:not(.eyebrow), .site-shell .recommendation p { color: #c5cfdf; }
-.site-shell .recommendation { background: #263248; border: 1px solid #3a4960; }
-.site-shell .recommendation span { color: #ffcf88; }
-.site-shell footer > .footer-note, .site-shell footer > .footer-thanks { color: #a1aec3; }
-.site-shell .mini-tabbar { background: #101623f2; border-top-color: #354158; box-shadow: 0 -8px 24px #0002; }
-.site-shell .mini-tabbar a { color: #aebcd0; transition: color .2s ease, background .2s ease; }
-.site-shell .mini-tabbar a[aria-current="location"] { background: #ffcf88; color: #342716; box-shadow: inset 0 1px 0 #ffe6bf; }
-.site-shell .mini-tabbar a:last-child { color: #8be4ba; }
-.site-shell :is(.mini-tabbar a, .announcement-pill, .negotiation-pill, .prospect-trigger, .prospect-item):focus-visible { outline: 3px solid #ffcf88; outline-offset: 2px; }
-.site-shell .mini-tabbar a:focus-visible, .site-shell .prospect-item:focus-visible { outline-offset: -3px; }
-.site-shell .metric-card.conveyancing-card { background: linear-gradient(135deg, #26354a, #1a2537); }
-.site-shell .conveyancing-heading h2 { color: #f4e4c8; }
-.site-shell .conveyancing-heading p { color: #b1bfd0; }
-.site-shell .conveyancing-icon, .site-shell .conveyancing-state { background: #30484b; color: #99efdb; }
-.site-shell .conveyancing-current { background: #101d2d; }
-.site-shell .conveyancing-current span { color: #afbdd0; }
-.site-shell .conveyancing-current time { color: #ffcf88; }
-/* Detail sheets remain light for reading; their accents match the two statistics. */
-.viewing-modal-card .viewing-modal-icon, .viewing-modal-card .viewing-time-index, .viewing-modal-card .viewing-modal-count { background: #fff0d8; color: #754817; }
-.total-viewing-modal-card .viewing-modal-icon, .total-viewing-modal-card .viewing-time-index, .total-viewing-modal-card .viewing-modal-count { background: #def7ef; color: #226057; }
+.site-shell .viewing-stat-button:focus-visible { outline: 2px solid var(--stat-focus); outline-offset: 3px; }
+.site-shell .prospect-trigger-icon { background: #f0f3ef; color: #5c7564; }
+.site-shell .prospect-trigger-copy strong { font-weight: 600; }
+.site-shell .prospect-item-card, .site-shell .prospect-empty { background: #fafbf9; }
+
+/* The 591 card now shares the white surface rather than forming a dark block. */
+.site-shell .metric-card.dark-card { color: #303c36; background: #fff; border-color: #e8e5df; }
+.site-shell .dark-card .metric-icon { background: #f6f2eb; color: #7b6649; }
+.site-shell .dark-card .metric-value strong { color: #303c36; font-weight: 650; text-shadow: none; }
+.site-shell .dark-card .metric-value > span, .site-shell .dark-card .metric-heading small,
+.site-shell .device-breakdown span, .site-shell .sync-row { color: #69766e; }
+.site-shell .dark-card .metric-change.is-positive { color: #4d765c; }
+.site-shell .dark-card .metric-change.is-negative { color: #a15944; }
+.site-shell .dark-card .metric-change.is-neutral, .site-shell .dark-card .metric-change span { color: #65776d; }
+.site-shell .device-breakdown > div { background: #fafbf9; border-color: #e8ece6; border-radius: 10px; }
+.site-shell .device-breakdown i, .site-shell .listing-link-icon { color: #7c806f; }
+.site-shell .device-breakdown strong, .site-shell .sync-row time { color: #35433b; }
+.site-shell .sync-row { border-top-color: #eeece8; }
+.site-shell .listing-card-link:focus-visible { outline-color: #8c795b; }
+.site-shell .portrait-placeholder { background: #f2f0e9; color: #75684f; }
+.site-shell .analysis-copy h2 { font-weight: 650; }
+.site-shell .analysis-copy blockquote { color: #4b5148; border-color: #c0b49d; font-weight: 550; }
+.site-shell .recommendation { background: #f8f8f5; border-radius: 12px; }
+.site-shell .mini-tabbar { background: #fffffff5; border-top-color: #e9e7e3; box-shadow: none; }
+.site-shell .mini-tabbar a { color: #707b74; }
+.site-shell .mini-tabbar a[aria-current="location"] { background: #f3f2ed; color: #3d4b42; font-weight: 650; }
+.site-shell .mini-tabbar a:focus-visible { outline-color: #7c806f; }
+.viewing-modal-card .viewing-modal-icon, .viewing-modal-card .viewing-time-index, .viewing-modal-card .viewing-modal-count { background: #f7f2ea; color: #795a38; }
+.total-viewing-modal-card .viewing-modal-icon, .total-viewing-modal-card .viewing-time-index, .total-viewing-modal-card .viewing-modal-count { background: #f0f4f7; color: #365d76; }
 @media (hover: hover) {
-  .site-shell .viewing-stat-button:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 #ffffff80, 0 10px 24px #0003; }
-  .site-shell .listing-card-link:hover { border-color: #82eedb; box-shadow: 0 8px 26px #62deca18; }
-  .site-shell .announcement-pill:hover, .site-shell .negotiation-pill:hover, .site-shell .prospect-item:hover { background: #30415b; }
+  .site-shell .viewing-stat-button:hover { border-color: var(--stat-focus); }
+  .site-shell .listing-card-link:hover { border-color: #c6c0b4; box-shadow: 0 4px 16px #302b2008; }
+  .site-shell .announcement-pill:hover, .site-shell .negotiation-pill:hover { background: #f0eee8; }
 }
-.site-shell .viewing-stat-button:active { transform: scale(.98); }
-@media (prefers-reduced-motion: no-preference) {
-  .site-shell .summary-grid > *, .site-shell .analysis-section { animation: report-reveal .5s ease backwards; }
-  .site-shell .summary-grid > :nth-child(2) { animation-delay: .08s; }
-  .site-shell .summary-grid > :nth-child(3), .site-shell .analysis-section { animation-delay: .16s; }
-}
-@keyframes report-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
