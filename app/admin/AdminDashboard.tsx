@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useId, useState } from "react";
 import { defaultReport, type NegotiationRecord, type PropertyReport, type ProspectiveBuyer } from "../../lib/report";
+import "./admin-mobile.css";
 
 type AnnouncementDraft = {
   title: string;
@@ -11,6 +12,20 @@ type AnnouncementDraft = {
 };
 
 const emptyAnnouncementDraft: AnnouncementDraft = { title: "", body: "", imageUrl: "" };
+
+const editorSections = [["basic", "基本資料"], ["status", "案件狀態"], ["viewings", "賞屋／買方"], ["market", "行情"], ["exposure", "591"], ["analysis", "分析"], ["negotiations", "斡旋"], ["announcements", "公告"]];
+
+function ViewingCountField({ label, value, max, onChange }: { label: string; value: number; max: number; onChange: (value: string) => void }) {
+  const labelId = useId();
+  return <div className="admin-field admin-viewing-count">
+    <span id={labelId}>{label}</span>
+    <div className="admin-count-controls">
+      <button type="button" className="admin-count-step" aria-label={`減少${label}`} disabled={value <= 0} onClick={() => onChange(String(Math.max(0, value - 1)))}>−</button>
+      <input type="number" inputMode="numeric" min="0" max={max} step="1" aria-labelledby={labelId} value={value} onChange={(event) => onChange(event.target.value)} />
+      <button type="button" className="admin-count-step" aria-label={`增加${label}`} disabled={value >= max} onClick={() => onChange(String(Math.min(max, value + 1)))}>＋</button>
+    </div>
+  </div>;
+}
 
 function newRecordId() {
   return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `announcement-${Date.now()}`;
@@ -296,7 +311,11 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
     <form className="admin-content" onSubmit={save}>
       <div className="admin-title"><div><p className="eyebrow">屋主回報管理</p><h1>更新房屋進度</h1><p>選擇區塊更新，儲存後屋主即可看見。</p></div><button className="save-button" type="submit" disabled={cannotSave}>{saving ? "儲存中…" : uploadingAnnouncementImage ? "照片上傳中…" : "儲存所有變更"}</button></div>
       <nav className="admin-section-nav" aria-label="後台區塊捷徑">
-        {[["basic", "基本資料"], ["status", "案件狀態"], ["viewings", "賞屋／買方"], ["market", "行情"], ["exposure", "591"], ["analysis", "分析"], ["negotiations", "斡旋"], ["announcements", "公告"]].map(([id, label]) => <a key={id} href={`#admin-${id}`}>{label}</a>)}
+        <label className="admin-mobile-section-picker"><span>快速前往</span><select defaultValue="" onChange={(event) => {
+          document.getElementById(`admin-${event.target.value}`)?.scrollIntoView({ block: "start" });
+          event.target.value = "";
+        }}><option value="" disabled>選擇編輯區塊</option>{editorSections.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
+        {editorSections.map(([id, label]) => <a key={id} href={`#admin-${id}`}>{label}</a>)}
       </nav>
       {loading && <p className="form-message" role="status">正在讀取最新資料…</p>}
       {loadError && <div className="form-message error" role="alert">{loadError} <button type="button" onClick={() => window.location.reload()}>重新載入</button></div>}
@@ -344,8 +363,8 @@ export default function AdminDashboard({ initialAuthenticated, authDisabled }: {
       <section className="admin-panel" id="admin-viewings">
         <div className="panel-heading"><span>03</span><div><h2>賞屋人數</h2><p>更新本週與累積賞屋熱度</p></div></div>
         <div className="form-grid three">
-          <Field label="本週賞屋組數"><input type="number" min="0" max="50" value={report.viewingThisWeek} onChange={(e) => setViewingThisWeek(e.target.value)} /></Field>
-          <Field label="總賞屋組數"><input type="number" min="0" max="200" value={report.viewingCount} onChange={(e) => setViewingCount(e.target.value)} /></Field>
+          <ViewingCountField label="本週賞屋組數" value={report.viewingThisWeek} max={50} onChange={setViewingThisWeek} />
+          <ViewingCountField label="總賞屋組數" value={report.viewingCount} max={200} onChange={setViewingCount} />
           <Field label="較上期成長 %"><input type="number" step="0.1" value={report.viewingGrowth} onChange={(e) => setNumber("viewingGrowth", e.target.value)} /></Field>
           <div className="weekly-viewing-admin">
             <div className="weekly-viewing-admin-heading">
